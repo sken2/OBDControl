@@ -21,9 +21,6 @@ class SelectDeviceActivity : AppCompatActivity() {
     val inflater : LayoutInflater by lazy{
         this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
-    val preference by lazy {
-        this.applicationContext.getSharedPreferences(Const.Preference.PREFERENCE_NAME, Context.MODE_PRIVATE)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,27 +77,14 @@ class SelectDeviceActivity : AppCompatActivity() {
 
     private val itemClickListener =
         AdapterView.OnItemClickListener { parent, view, position, id ->
-            val device = parent.adapter.getItem(position) as BluetoothDevice
-            Toast.makeText(this,"Connecting", Toast.LENGTH_SHORT).show()
-            Elm327.init(device, this.applicationContext)
-//            showConnectDialog(device)
-            if (Elm327.isConnected()) {
-                preference.edit().putString(Const.Preference.PREF_DEVICE, device.address).apply()
-                val chatIntent = Intent(this@SelectDeviceActivity, SppChatActivity::class.java)
+            synchronized(this) {
+                val device = parent.adapter.getItem(position) as BluetoothDevice
+                Toast.makeText(this,"Connecting", Toast.LENGTH_SHORT).show()
+                val connect = Intent(this@SelectDeviceActivity, ConnectingDeviceActivity::class.java)
                     .putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-                startActivity(chatIntent)
-            } else {
-                Toast.makeText(this, "OOPS", Toast.LENGTH_SHORT).show()
+                startActivity(connect)
             }
         }
-
-    fun showConnectDialog(device: BluetoothDevice) {
-        val connectingText : TextView? = findViewById(R.id.text_connecting)
-        connectingText?.setVisibility(View.VISIBLE)
-        connectingText?.text = "Connecting"
-//        Elm327.connect()
-        connectingText?.visibility = View.INVISIBLE
-    }
 
     private val connectingDialog : AlertDialog by lazy {
         val builder = AlertDialog.Builder(this, R.style.Theme_AppCompat_Dialog)
