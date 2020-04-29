@@ -1,6 +1,9 @@
 package com.example.obdcontrol
 
+import android.graphics.Typeface
+import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import java.util.*
 
 object Logging : Observable() {
@@ -24,7 +27,7 @@ object Logging : Observable() {
         synchronized(logging) {
             when (logging.last().dicrection) {
                 Direction.TX -> {
-                    logging += Transaction(message, Direction.TX)
+                    logging += Transaction(message, Direction.RX)
                 }
                 Direction.RX -> {
                     logging.last().text += message
@@ -41,7 +44,17 @@ object Logging : Observable() {
             if (logging.size > 1100) {
                 logging = logging.copyOfRange(100, logging.size)
             }
-            logging.forEach { element -> builder.append(element.text) }
+            logging.forEach {
+                if(it.text.isEmpty()) {
+                    return@forEach
+                }
+                when (it.dicrection) {
+                    Direction.RX -> builder.append(it.text, StyleSpan(Typeface.NORMAL), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    Direction.TX -> {
+                        builder.append(it.text, StyleSpan(Typeface.BOLD), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                }
+            }
         }
         return builder
     }
