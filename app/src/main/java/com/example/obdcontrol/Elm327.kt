@@ -171,19 +171,13 @@ object Elm327 {
         val stream = socket?.inputStream
         override fun call(): Boolean {
             try {
-                val reader = BufferedReader(InputStreamReader(stream))
+                val scanner = Scanner(stream)
+                scanner.useDelimiter(CR)
                 while(true) {
-//                    val watchDog = Thread {
-//                        Thread.sleep(READ_TIMEOUT)
-//                        println("bow wow")
-//                        throw ErrorResponseException()
-//                    }.apply {
-//                        this.run()
-//                    }
-                    val response = reader.readLine()
+                    val response = scanner.next()
                     Logging.receive(response + LF)
-                    val obdResponse = OBDResponse(response).apply {
-                        if (this.isValid) {
+                    val obdResponse = OBDResponse(response, false).apply {
+                        if (this.isValid()) {
                             Monitor.arriveed(this)
                         }
                     }
