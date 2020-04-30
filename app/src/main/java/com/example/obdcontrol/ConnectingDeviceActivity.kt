@@ -43,8 +43,12 @@ class ConnectingDeviceActivity : AppCompatActivity() {
                         Toast.makeText(this@ConnectingDeviceActivity, "No Device", Toast.LENGTH_SHORT).show()
                     }
                 }
+                done()
             }
         }.start()
+    }
+
+    private fun done() {
         finish()
     }
 }
