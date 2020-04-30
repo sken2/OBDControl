@@ -10,4 +10,10 @@ object Const {
     object UUIDS {
         const val SPP_UUID = "00001101-0000-1000-8000-00805F9B34FB"
     }
+
+    object Keys {
+        const val Preset1 = "Preset1"
+        const val Preset2 = "Preset2"
+        const val Preset3 = "Preset3"
+    }
 }

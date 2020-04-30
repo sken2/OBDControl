@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
@@ -57,9 +58,27 @@ class SppChatActivity : AppCompatActivity() {
             Toast.makeText(this, "Connect Failed", Toast.LENGTH_SHORT).show()
             finishActivity(255)
         }
-        button1.setOnClickListener {Elm327.send("ATMA")}
-        button2.setOnClickListener {Elm327.send("01 00")}
-        button3.setOnClickListener {Elm327.Monitor.start()}
+        button1.setOnClickListener { v ->
+            Elm327.send((v as Button).text.toString())
+        }
+        button2.setOnClickListener { v ->
+            Elm327.send((v as Button).text.toString())
+        }
+        button3.setOnClickListener {
+            Elm327.Monitor.start()
+        }
+        button1.setOnLongClickListener {v ->
+            ButtonPresetDialog(v as Button, Const.Keys.Preset1).show(supportFragmentManager, "Preset ")
+            button1.text = preference.getString(Const.Keys.Preset1, "ATZ")
+            true
+        }
+        button2.setOnLongClickListener {v ->
+            ButtonPresetDialog(v as Button, Const.Keys.Preset2).show(supportFragmentManager, "Preset ")
+            button2.text = preference.getString(Const.Keys.Preset2, "ATMA")
+            true
+        }
+        button1.text = preference.getString(Const.Keys.Preset1, "ATZ")
+        button2.text = preference.getString(Const.Keys.Preset2, "ATMA")
     }
 
     override fun onResume() {
@@ -108,8 +127,31 @@ class SppChatActivity : AppCompatActivity() {
     private val obdObserver = object : Observer {
         override fun update(o: Observable?, arg: Any?) {
             if (arg is OBDResponse) {
-                Log.v(Const.TAG, "SppChatActivity::obdObserver " + arg.toString())
+                Log.v(Const.TAG, "SppChatActivity::obdObserver $arg")
             }
+        }
+    }
+
+    class ButtonPresetDialog(button : Button, key : String) : DialogFragment() {
+        private val key = key
+        private val button = button
+        val preference : SharedPreferences by lazy {
+            this.context!!.getSharedPreferences(Const.Preference.PREFERENCE_NAME, Context.MODE_PRIVATE)
+        }
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            val presetText = preference.getString(key, "")
+            val editText = EditText(activity).apply {
+                setText(presetText)
+            }
+             return AlertDialog.Builder(activity)
+                .setView(editText)
+                .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->  })
+                .setPositiveButton("Ok") { dialog, witch ->
+                    preference.edit().putString(key, editText.text.toString()).apply()
+                    button.text = editText.text
+                    Toast.makeText(activity, editText.text, Toast.LENGTH_SHORT).show()
+                }
+                .create()
         }
     }
 }
