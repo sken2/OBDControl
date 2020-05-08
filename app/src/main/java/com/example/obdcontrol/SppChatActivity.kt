@@ -97,23 +97,30 @@ class SppChatActivity : AppCompatActivity() {
         }
         button1.text = preference.getString(Const.Keys.Preset1, "ATZ")
         button2.text = preference.getString(Const.Keys.Preset2, "ATMA")
+
+        Elm327.Monitor.addObserver(obdObserver)
     }
 
     override fun onResume() {
         super.onResume()
-        logBox.text = Logging.getMessage()
         Logging.addObserver(rxObserver)
-        Elm327.Monitor.addObserver(obdObserver)
+        logBox.text = Logging.getMessage()
+        this.monitorIsActive = Elm327.Monitor.isRunning()
+        if (monitorIsActive) {
+            button3.text = getString(R.string.btn_running)
+
+        } else {
+            button3.text = getString(R.string.btn_stopped)
+        }
     }
 
     override fun onPause() {
         Logging.deleteObserver(rxObserver)
-        Elm327.Monitor.deleteObserver(obdObserver)
-        Elm327.Monitor.stop()
         super.onPause()
     }
 
     override fun onDestroy() {
+        Elm327.Monitor.deleteObserver(obdObserver)
         Elm327.disConnect()
         super.onDestroy()
     }

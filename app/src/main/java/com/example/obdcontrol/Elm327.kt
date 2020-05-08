@@ -76,6 +76,9 @@ object Elm327 {
     }
 
     fun disConnect() {
+        if (Monitor.isRunning()) {
+            Monitor.stop()
+        }
         if (this.isConnected()) {
             this.socket?.close()
             readFutuer?.run {
