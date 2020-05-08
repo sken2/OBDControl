@@ -4,6 +4,8 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
+import java.io.OutputStream
+import java.lang.Exception
 import java.util.*
 
 object Logging : Observable() {
@@ -57,6 +59,17 @@ object Logging : Observable() {
             }
         }
         return builder
+    }
+
+    fun save(stream : OutputStream) : Boolean{
+        try {
+            stream.write(getMessage().toString().toByteArray())
+        } catch (e : Exception) {
+            return false
+        } finally {
+            stream.close()
+        }
+        return true
     }
 
     enum class Direction {

@@ -5,10 +5,7 @@ import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 import java.lang.Exception
 import java.util.*
 import java.util.concurrent.Callable
@@ -30,6 +27,9 @@ object Elm327 {
 
     private val simpleResonse = Pattern.compile("[0-9A-F]{2,3}")
     private var delimiter = CR
+
+//    private var canSpeed = CAN_SPEED.AUTO
+    private var canSpeed = CAN_SPEED.ISO15765_4_11bits  // for my car // TODO
 
     fun init(device : BluetoothDevice, context : Context) {
         this.socket?.run {
@@ -54,11 +54,20 @@ object Elm327 {
         try {
             if (waitOk(ATZ) and waitOk(ATE0)) {
                 Toast.makeText(this.appContext, "init error", Toast.LENGTH_SHORT).show()
+            } else {
+                waitOk("AT SP${canSpeed.speed}")
             }
         } catch (e : Exception) {
             this.disConnect()
         }
         readFutuer = executor.submit(ReadTask())
+    }
+
+    fun setSpeed(speed : Elm327.CAN_SPEED) {
+        this.canSpeed = speed
+    }
+    fun getSpeed() : Elm327.CAN_SPEED {
+        return this.canSpeed
     }
 
     fun disConnect() {
@@ -98,6 +107,10 @@ object Elm327 {
         return data
     }
 
+    fun saveTo(stream : OutputStream) : Boolean {
+        return Logging.save(stream)
+    }
+
     private fun waitOk(command : String) : Boolean {
         val stream = socket?.inputStream
         val buffer = ByteArray(1024)
@@ -116,13 +129,12 @@ object Elm327 {
                         val chars = this.read(buffer, position, buffer.size)
                         position += chars
                         watchDog.interrupt()
+                        Logging.receive(buffer.copyOfRange(0, position).toString())
                         when {
                             buffer.contains('?'.toByte()) -> {
-                                Logging.receive(buffer.copyOfRange(0, position).toString())
                                 return@Callable false
                             }
                             buffer.toString().toUpperCase().contains("OK") -> {
-                                Logging.receive(buffer.copyOfRange(0, position).toString())
                                 return@Callable true
                             }
                         }
@@ -146,12 +158,18 @@ object Elm327 {
         var readTask : Future<Boolean>? = null
         fun start() {
             readTask = executor.submit(ReadTask())
+            setChanged()
+            notifyObservers()
         }
 
         fun stop() {
             readTask?.run {
                 this.cancel(true)
+                readTask = null
             }
+            send(" ")
+            setChanged()
+            notifyObservers()
         }
 
         fun isRunning() : Boolean {
@@ -190,5 +208,19 @@ object Elm327 {
 
     private class ErrorResponseException : Exception () {
 
+    }
+
+    enum class CAN_SPEED(val speed : String) {
+        AUTO("0"),
+        SAE_J1850_PWM("1"),
+        SAE_J1850_VPW("2"),
+        ISO9142_2("3"),
+        ISO14230_4_SLOW("4"),
+        ISO14230_4("5"),
+
+        ISO15765_4_11bits("6"),
+        ISO15765_4_29bits("7"),
+        ISO15765_4_11bits_500k("8"),
+        ISO15765_4_29bits_500k("9")
     }
 }
