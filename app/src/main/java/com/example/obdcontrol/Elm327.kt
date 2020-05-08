@@ -3,6 +3,7 @@ package com.example.obdcontrol
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import java.io.*
@@ -11,6 +12,7 @@ import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.logging.Handler
 import java.util.regex.Pattern
 
 object Elm327 {
@@ -38,7 +40,7 @@ object Elm327 {
         this.appContext = context.applicationContext
         val connectFuture = executor.submit(Callable{
             try {
-                socket = device?.createRfcommSocketToServiceRecord(
+                socket = device.createRfcommSocketToServiceRecord(
                     UUID.fromString(Const.UUIDS.SPP_UUID)
                 )
                 if (socket == null) {
@@ -52,10 +54,13 @@ object Elm327 {
         })
         connectFuture.get()
         try {
-            if (waitOk(ATZ) and waitOk(ATE0)) {
-                Toast.makeText(this.appContext, "init error", Toast.LENGTH_SHORT).show()
-            } else {
+            val result =
+                waitOk(ATZ) and
+                waitOk(ATE0) and
                 waitOk("AT SP${canSpeed.speed}")
+            if(!result) {
+                Looper.prepare()
+                Toast.makeText(context, "init error", Toast.LENGTH_SHORT).show()
             }
         } catch (e : Exception) {
             this.disConnect()
