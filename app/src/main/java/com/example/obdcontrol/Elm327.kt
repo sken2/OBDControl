@@ -10,6 +10,7 @@ import java.io.*
 import java.lang.Exception
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.logging.Handler
@@ -80,10 +81,15 @@ object Elm327 {
             Monitor.stop()
         }
         if (this.isConnected()) {
-            this.socket?.close()
             readFutuer?.run {
-                this.cancel(true)
+                try {
+                    this.cancel(true)
+                    this.get()
+                } catch (e : CancellationException) {
+                }
             }
+            waitOk("ATLP")
+            this.socket?.close()
         }
         this.socket = null
         readFutuer = null
@@ -163,33 +169,30 @@ object Elm327 {
     }
 
     object Monitor : Observable() {
-        var readTask : Future<Boolean>? = null
+        var monitoring = false
+
         fun start() {
-            readTask = executor.submit(ReadTask())
+            monitoring = true
+            send("ATMA")
             setChanged()
             notifyObservers()
         }
 
         fun stop() {
-            readTask?.run {
-                this.cancel(true)
-                readTask = null
-            }
             send(" ")
             setChanged()
             notifyObservers()
         }
 
         fun isRunning() : Boolean {
-            readTask?.run {
-                return !this.isDone
-            }
-            return false
+            return monitoring
         }
 
         fun arriveed(message : OBDResponse) {
-            setChanged()
-            notifyObservers(message)
+            if (monitoring) {
+                setChanged()
+                notifyObservers(message)
+            }
         }
     }
 
@@ -199,7 +202,7 @@ object Elm327 {
             try {
                 val scanner = Scanner(stream)
                 scanner.useDelimiter(CR)
-                while(true) {
+                while (!Thread.interrupted()) {
                     val response = scanner.next()
                     Logging.receive(response + LF)
                     val obdResponse = OBDResponse(response, false).apply {
@@ -208,9 +211,12 @@ object Elm327 {
                         }
                     }
                 }
+            } catch (e : Exception) {
+                Log.d(Const.TAG, "Elm327::ReadTask ${e.message}")
             } finally {
                 stream?.close()
             }
+            return false
         }
     }
 
