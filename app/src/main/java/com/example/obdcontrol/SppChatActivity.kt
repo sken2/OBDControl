@@ -95,15 +95,18 @@ class SppChatActivity : AppCompatActivity() {
                 .putExtra(Intent.EXTRA_TITLE, fileName)
             startActivityForResult(request, SAVE_REQUEST)
         }
+        clearButton.setOnClickListener {
+            ConfirmClearDialog().show(supportFragmentManager, "Clear Logging")
+        }
         button1.text = preference.getString(Const.Keys.Preset1, "ATZ")
         button2.text = preference.getString(Const.Keys.Preset2, "ATMA")
 
         Elm327.Monitor.addObserver(obdObserver)
+        Logging.addObserver(rxObserver)
     }
 
     override fun onResume() {
         super.onResume()
-        Logging.addObserver(rxObserver)
         logBox.text = Logging.getMessage()
         this.monitorIsActive = Elm327.Monitor.isRunning()
         if (monitorIsActive) {
@@ -115,12 +118,12 @@ class SppChatActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        Logging.deleteObserver(rxObserver)
         super.onPause()
     }
 
     override fun onDestroy() {
         Elm327.Monitor.deleteObserver(obdObserver)
+        Logging.deleteObserver(rxObserver)
         Elm327.disConnect()
         super.onDestroy()
     }
@@ -213,6 +216,18 @@ class SppChatActivity : AppCompatActivity() {
                     preference.edit().putString(key, editText.text.toString()).apply()
                     button.text = editText.text
                     Toast.makeText(activity, editText.text, Toast.LENGTH_SHORT).show()
+                }
+                .create()
+        }
+    }
+
+    class ConfirmClearDialog() : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
+            return AlertDialog.Builder(activity)
+                .setTitle("Clear Logging ?")
+                .setNegativeButton("Cancel", { dialog, which ->})
+                .setPositiveButton("Clear") { dialog, which ->
+                    Logging.clear()
                 }
                 .create()
         }
