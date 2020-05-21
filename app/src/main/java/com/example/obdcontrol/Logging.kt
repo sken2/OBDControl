@@ -14,6 +14,8 @@ object Logging : Observable() {
     fun clear() {
         synchronized(logging) {
             this.logging = arrayOf(Transaction("", Direction.RX))
+            setChanged()
+            notifyObservers()
         }
     }
 
