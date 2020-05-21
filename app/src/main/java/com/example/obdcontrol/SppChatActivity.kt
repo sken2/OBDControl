@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.fragment.app.DialogFragment
@@ -96,10 +97,13 @@ class SppChatActivity : AppCompatActivity() {
             startActivityForResult(request, SAVE_REQUEST)
         }
         clearButton.setOnClickListener {
-            ConfirmClearDialog().show(supportFragmentManager, "Clear Logging")
+            ConfirmClearDialog("Clear Logging?", Runnable {
+                Logging.clear()
+            })
+                .show(supportFragmentManager, "Clear Logging")
         }
         button1.text = preference.getString(Const.Keys.Preset1, "ATZ")
-        button2.text = preference.getString(Const.Keys.Preset2, "ATMA")
+        button2.text = preference.getString(Const.Keys.Preset2, "AT PB D0 07")
 
         Elm327.Monitor.addObserver(obdObserver)
         Logging.addObserver(rxObserver)
@@ -121,6 +125,10 @@ class SppChatActivity : AppCompatActivity() {
         super.onPause()
     }
 
+    override fun onBackPressed() {
+        Log.v(Const.TAG, "SppChatActivity::onBackpressed")
+        ConfirmClearDialog("Exit ", Runnable { super.onBackPressed() }).show(supportFragmentManager, "Close")
+    }
     override fun onDestroy() {
         Elm327.Monitor.deleteObserver(obdObserver)
         Logging.deleteObserver(rxObserver)
@@ -221,13 +229,13 @@ class SppChatActivity : AppCompatActivity() {
         }
     }
 
-    class ConfirmClearDialog() : DialogFragment() {
+    class ConfirmClearDialog(val title : String, val callback : Runnable) : DialogFragment() {
         override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
             return AlertDialog.Builder(activity)
-                .setTitle("Clear Logging ?")
+                .setTitle(title)
                 .setNegativeButton("Cancel", { dialog, which ->})
-                .setPositiveButton("Clear") { dialog, which ->
-                    Logging.clear()
+                .setPositiveButton("Ok") { dialog, which ->
+                    callback.run()
                 }
                 .create()
         }
