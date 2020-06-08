@@ -25,7 +25,9 @@ class MainActivity : AppCompatActivity() {
         BluetoothAdapter.getDefaultAdapter()
     }
     val controller : android.media.session.MediaController by lazy {
-        MediaSession(this.applicationContext, "OOoOo").controller
+        MediaSession(this.applicationContext, "OOoOo").controller.also {
+            println(it.packageName)
+        }
     }
     private val previousDevice : Button by lazy {
         findViewById(R.id.btn_previous) as Button
@@ -41,7 +43,6 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 1)
         }
-        println(controller.packageName)
         registerReceiver(spotifyReceiver, IntentFilter("com.spotify.music.active"))
         selectDevice.setOnClickListener {
             val select = Intent(this.applicationContext, SelectDeviceActivity::class.java)
@@ -98,6 +99,5 @@ class MainActivity : AppCompatActivity() {
             println("Spotify is active")
 //            TODO("Not yet implemented")
         }
-
     }
 }
