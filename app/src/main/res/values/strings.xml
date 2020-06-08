@@ -15,4 +15,6 @@
     <string name="title_notifications">Notifications</string>
     <string name="btn_stopped">Stopped</string>
     <string name="btn_running">Running</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_clear">Clear</string>
 </resources>
