@@ -18,6 +18,7 @@ class ConnectingDeviceActivity : AppCompatActivity() {
     private val deviceName : TextView? by lazy {
         findViewById(R.id.text_device_name) as TextView
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (device == null) {
