@@ -42,7 +42,7 @@ object Logging : Observable() {
         notifyObservers()
     }
 
-    fun getMessage() : SpannableStringBuilder {
+    @Synchronized fun getMessage() : SpannableStringBuilder {
         val builder = SpannableStringBuilder()
         synchronized(logging) {
             if (logging.size > 1100) {
