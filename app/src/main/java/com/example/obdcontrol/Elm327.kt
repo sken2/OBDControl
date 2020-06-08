@@ -13,22 +13,20 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.logging.Handler
-import java.util.regex.Pattern
 
 object Elm327 {
-    val executor = Executors.newSingleThreadExecutor()
-    val CR = "\r"
+    private val executor = Executors.newSingleThreadExecutor()
+    private val CR = "\r"
     private val LF = "\n"
-    val ATZ = "ATZ"
-    val ATE0 = "ATE0"
-    val READ_TIMEOUT : Long = 200  //
+    private val ATZ = "ATZ"
+    const val ATE0 = "ATE0"
+    const val ATH1 = "ATH1"
+    const val READ_TIMEOUT : Long = 200  //
 
     private var socket: BluetoothSocket? = null
     private var appContext : Context? = null
     private var readFutuer : Future<Boolean>? = null
 
-    private val simpleResonse = Pattern.compile("[0-9A-F]{2,3}")
     private var delimiter = CR
 
 //    private var canSpeed = CAN_SPEED.AUTO
@@ -58,7 +56,8 @@ object Elm327 {
             val result =
                 waitOk(ATZ) and
                 waitOk(ATE0) and
-                waitOk("AT SP${canSpeed.speed}")
+                waitOk(ATH1)// and
+//                waitOk("AT SP${canSpeed.speed}")
             if(!result) {
                 Looper.prepare()
                 Toast.makeText(context, "init error", Toast.LENGTH_SHORT).show()
@@ -103,8 +102,13 @@ object Elm327 {
     }
 
     fun send(message : String) {
-        this.socket?.outputStream?.write((message + delimiter).toByteArray())
-        Logging.send(message + LF)
+        try {
+            this.socket?.outputStream?.write((message + delimiter).toByteArray())
+        } catch (e : IOException) {
+
+        } finally {
+            Logging.send(message + LF)
+        }
     }
 
     fun toBytes(command : String) : Array<Byte> {
@@ -156,7 +160,7 @@ object Elm327 {
                 } catch (e: Exception) {
                 }
                 if (position != 0) {
-                    Logging.receive(buffer.copyOfRange(0, position).toString())
+                    Logging.receive(buffer.copyOfRange(0, position).toString() + "+")   //mark timeout with "+"
                 }
                 return@Callable false
             })
@@ -179,9 +183,12 @@ object Elm327 {
         }
 
         fun stop() {
-            send(" ")
-            setChanged()
-            notifyObservers()
+            monitoring = false
+            if (isConnected()) {
+                send(" ")
+            }
+//            setChanged()
+//            notifyObservers()
         }
 
         fun isRunning() : Boolean {
@@ -204,14 +211,14 @@ object Elm327 {
                 scanner.useDelimiter(CR)
                 while (!Thread.interrupted()) {
                     val response = scanner.next()
-                    Logging.receive(response + LF)
+                    Logging.receive(response + "$" + LF)//TODO remove "$"
                     val obdResponse = OBDResponse(response, false).apply {
                         if (this.isValid()) {
                             Monitor.arriveed(this)
                         }
                     }
                 }
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 Log.d(Const.TAG, "Elm327::ReadTask ${e.message}")
             } finally {
                 stream?.close()
