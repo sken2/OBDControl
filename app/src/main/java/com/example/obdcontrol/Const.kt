@@ -7,6 +7,10 @@ object Const {
         const val PREF_DEVICE = "DEVICE"
     }
 
+    object Requests {
+        val REQUEST_SELECT = 1234
+    }
+
     object UUIDS {
         const val SPP_UUID = "00001101-0000-1000-8000-00805F9B34FB"
     }
