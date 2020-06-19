@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity() {
     private val selectDevice : Button by lazy {
         findViewById(R.id.btn_devicelist) as Button
     }
-    private val REQUEST_SELECT = 1234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                     val address = preference.getString(Const.Preference.PREF_DEVICE, "")
                     val device = this.getRemoteDevice(address)
                     chat.putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-                    startActivityForResult(chat, REQUEST_SELECT)
+                    startActivityForResult(chat, Const.Requests.REQUEST_SELECT)
                 }
             }
         }
@@ -71,13 +70,12 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         selectDevice.isEnabled = true
         val address = preference.getString(Const.Preference.PREF_DEVICE, "")
-        when (address) {
+        previousDevice.text = when (address) {
             "" -> {
-                previousDevice.text = "No Device"
+                "No Device"
             }
             else -> {
-                val device = adapter?.getRemoteDevice(address)
-                previousDevice.text = device?.name
+                adapter?.getRemoteDevice(address)?.name
             }
         }
     }
@@ -97,7 +95,6 @@ class MainActivity : AppCompatActivity() {
     private val spotifyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             println("Spotify is active")
-//            TODO("Not yet implemented")
         }
     }
 }

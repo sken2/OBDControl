@@ -147,10 +147,9 @@ class SppChatActivity : AppCompatActivity() {
             SAVE_REQUEST -> {
                 if (Activity.RESULT_OK == resultCode) {
                     data.data?.run {
-                        val stream = contentResolver.openOutputStream(this)
-                        stream?.run {
-                            if (!Elm327.saveTo(this)) {
-                                Toast.makeText(this@SppChatActivity, "OOPS", Toast.LENGTH_SHORT).show()
+                        contentResolver.openOutputStream(this)?.let {
+                            if (!Elm327.saveTo(it)) {
+                                Toast.makeText(this@SppChatActivity, "Save file failed", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -160,25 +159,27 @@ class SppChatActivity : AppCompatActivity() {
     }
 
     private fun monitorButton(button : Button, isActive : Boolean) : Boolean {
-        if (isActive) {
-            Elm327.Monitor.stop()
-            button.text = getString(R.string.btn_stopped)
-        } else {
-            Elm327.Monitor.start()
-//            Elm327.send("ATMA")
-            button.text = getString(R.string.btn_running)
+        with(button) {
+            if (isActive) {
+                Elm327.Monitor.stop()
+                text = getString(R.string.btn_stopped)
+            } else {
+                Elm327.Monitor.start()
+                text = getString(R.string.btn_running)
+            }
         }
         return !isActive
     }
 
     private val editWatcher = object :TextView.OnEditorActionListener {
         override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                if (v != null) {
-                    val text = v.text
-                    Log.v(Const.TAG, "SppChatActivity::editWatcher $text")
-                    Elm327.send(text.toString())
-                    return true
+            when (actionId) {
+                EditorInfo.IME_ACTION_DONE -> {
+                    v?.run {
+                        Log.v(Const.TAG, "SppChatActivity::editWatcher $text")
+                        Elm327.send(text.toString())
+                        return true
+                    }
                 }
             }
             return false
@@ -186,7 +187,7 @@ class SppChatActivity : AppCompatActivity() {
     }
 
     private fun createFile() : String {
-        val now = Date()//TODO
+        val now = Date()//TODO add date to saveed file path
         return "Elm327.txt"
     }
 

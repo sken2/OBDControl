@@ -26,24 +26,20 @@ class SelectDeviceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_select_device)
-        val listView : ListView? = findViewById(R.id.list_device_to_connect)
-        listView?.adapter = deviceAdapter
-        listView?.onItemClickListener = itemClickListener
+        findViewById<ListView>(R.id.list_device_to_connect).apply {
+            adapter = deviceAdapter
+            onItemClickListener = itemClickListener
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        var devices = btAdapter?.bondedDevices
-        if (devices != null) {
-            eachDevice@ for (device in devices) {
-                for (listedDevice in deviceAdapter.devices) {
-                    if (device.equals(listedDevice)) {
-                        continue@eachDevice
-                    }
-                }
-                val uuids = device.uuids
-                if (uuids.contains(ParcelUuid(UUID.fromString(Const.UUIDS.SPP_UUID)))) {
-                    deviceAdapter.devices += device
+        btAdapter?.bondedDevices?.run {
+            filter {
+                deviceAdapter.devices.contains(it)
+            }.forEach {
+                if (it.uuids.contains(ParcelUuid(UUID.fromString(Const.UUIDS.SPP_UUID)))) {
+                    deviceAdapter.devices += it
                 }
             }
             deviceAdapter.notifyDataSetChanged()
@@ -75,21 +71,20 @@ class SelectDeviceActivity : AppCompatActivity() {
         }
     }
 
-    private val itemClickListener =
-        AdapterView.OnItemClickListener { parent, view, position, id ->
-            synchronized(this) {
-                val device = parent.adapter.getItem(position) as BluetoothDevice
-                Toast.makeText(this,"Connecting", Toast.LENGTH_SHORT).show()
-                val connect = Intent(this@SelectDeviceActivity, ConnectingDeviceActivity::class.java)
-                    .putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-                startActivity(connect)
-            }
+    private val itemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+        synchronized(this) {
+            val device = parent.adapter.getItem(position) as BluetoothDevice
+            Toast.makeText(this,"Connecting", Toast.LENGTH_SHORT).show()
+            val connect = Intent(this@SelectDeviceActivity, ConnectingDeviceActivity::class.java)
+                .putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+            startActivity(connect)
         }
+    }
 
     private val connectingDialog : AlertDialog by lazy {
         val builder = AlertDialog.Builder(this, R.style.Theme_AppCompat_Dialog)
         builder.apply  {
-            builder.setNegativeButton("Cancel", DialogInterface.OnClickListener{dialog, id ->
+            setNegativeButton("Cancel", DialogInterface.OnClickListener{dialog, id ->
                 Toast.makeText(this@SelectDeviceActivity,"canceled", Toast.LENGTH_SHORT).show()
             })
         }
