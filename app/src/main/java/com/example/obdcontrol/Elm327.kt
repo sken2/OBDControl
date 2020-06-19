@@ -21,7 +21,7 @@ object Elm327 {
     private val ATZ = "ATZ"
     const val ATE0 = "ATE0"
     const val ATH1 = "ATH1"
-    const val READ_TIMEOUT : Long = 200  //
+    const val READ_TIMEOUT : Long = 500  //
 
     private var socket: BluetoothSocket? = null
     private var appContext : Context? = null
@@ -152,7 +152,7 @@ object Elm327 {
                             buffer.contains('?'.toByte()) -> {
                                 return@Callable false
                             }
-                            buffer.toString().toUpperCase().contains("OK") -> {
+                            buffer.toString().toUpperCase(Locale.ROOT).contains("OK") -> {
                                 return@Callable true
                             }
                         }
@@ -207,14 +207,16 @@ object Elm327 {
         val stream = socket?.inputStream
         override fun call(): Boolean {
             try {
-                val scanner = Scanner(stream)
-                scanner.useDelimiter(CR)
-                while (!Thread.interrupted()) {
-                    val response = scanner.next()
-                    Logging.receive(response + "$" + LF)//TODO remove "$"
-                    val obdResponse = OBDResponse(response, false).apply {
-                        if (this.isValid()) {
-                            Monitor.arriveed(this)
+                stream?.run {
+                    val scanner = Scanner(this)
+                    scanner.useDelimiter(CR)
+                    while (!Thread.interrupted()) {
+                        val response = scanner.next()
+                        Logging.receive(response + "$" + LF)//TODO remove "$" someday
+                        val obdResponse = OBDResponse(response, false).apply {
+                            if (this.isValid()) {
+                                Monitor.arriveed(this)
+                            }
                         }
                     }
                 }
@@ -238,10 +240,11 @@ object Elm327 {
         ISO9142_2("3"),
         ISO14230_4_SLOW("4"),
         ISO14230_4("5"),
-
         ISO15765_4_11bits("6"),
         ISO15765_4_29bits("7"),
         ISO15765_4_11bits_500k("8"),
-        ISO15765_4_29bits_500k("9")
+        ISO15765_4_29bits_500k("9"),
+        USER1("A"),
+        USER2("B")
     }
 }
