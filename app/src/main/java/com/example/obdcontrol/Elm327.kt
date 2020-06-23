@@ -24,7 +24,6 @@ object Elm327 {
     const val READ_TIMEOUT : Long = 500  //
 
     private var socket: BluetoothSocket? = null
-    private var appContext : Context? = null
     private var readFutuer : Future<Boolean>? = null
 
     private var delimiter = CR
@@ -36,21 +35,20 @@ object Elm327 {
         this.socket?.run {
             disConnect()
         }
-        this.appContext = context.applicationContext
-        val connectFuture = executor.submit(Callable{
+        val connectFuture = executor.submit {
             try {
                 socket = device.createRfcommSocketToServiceRecord(
                     UUID.fromString(Const.UUIDS.SPP_UUID)
                 )
                 if (socket == null) {
-                    return@Callable
+                    return@submit
                 }
                 socket!!.connect()
-                return@Callable
+                return@submit
             } catch (e: IOException) {
-                return@Callable
+                Log.e(Const.TAG, "Elm327::init ${e.message}")
             }
-        })
+        }
         connectFuture.get()
         try {
             val result =
@@ -208,8 +206,9 @@ object Elm327 {
         override fun call(): Boolean {
             try {
                 stream?.run {
-                    val scanner = Scanner(this)
-                    scanner.useDelimiter(CR)
+                    val scanner = Scanner(this).apply {
+                        useDelimiter(CR)
+                    }
                     while (!Thread.interrupted()) {
                         val response = scanner.next()
                         Logging.receive(response + "$" + LF)//TODO remove "$" someday

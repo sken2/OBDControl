@@ -6,13 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 
 class ConnectingDeviceActivity : AppCompatActivity() {
 
     private val device : BluetoothDevice? by lazy {
-        val intent = getIntent()
         intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice
     }
     private val deviceName : TextView? by lazy {
@@ -20,6 +20,7 @@ class ConnectingDeviceActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(Const.TAG, "ConnectingDeviceActivity::onCreate")
         super.onCreate(savedInstanceState)
         if (device == null) {
             finishActivity(255)
@@ -28,28 +29,38 @@ class ConnectingDeviceActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        Log.v(Const.TAG, "ConnectingDeviceActivity::onResume")
         super.onResume()
-        Thread() {
-            device?.run {
-                deviceName?.text = this.name
+        device?.run {
+            deviceName?.text = this.name
+            Thread() {
                 Elm327.init(this, this@ConnectingDeviceActivity)
                 if (Elm327.isConnected()) {
-                    val chat = getIntent()
-                        .setClass(this@ConnectingDeviceActivity.applicationContext, SppChatActivity::class.java)
-//                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    startActivity(chat)
+                    with(intent) {
+                        setClass(
+                            this@ConnectingDeviceActivity.applicationContext,
+                            SppChatActivity::class.java
+                        )
+                        startActivity(this)
+                    }
                 } else {
-                    val handler = Handler(Looper.getMainLooper())
-                    handler.post {
-                        Toast.makeText(this@ConnectingDeviceActivity, "No Device", Toast.LENGTH_SHORT).show()
+                    with(Handler(Looper.getMainLooper())) {
+                        post {
+                            Toast.makeText(
+                                this@ConnectingDeviceActivity,
+                                "No Device",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
                 done()
-            }
-        }.start()
+            }.start()
+        }
     }
 
     private fun done() {
+        Log.v(Const.TAG, "ConnactingDeviceActivity::done")
         finish()
     }
 }
