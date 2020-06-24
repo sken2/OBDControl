@@ -2,6 +2,10 @@ package com.example.obdcontrol
 
 object Const {
     val TAG = "OdbConnect"
+
+    val CR = "\r"
+    val LF = "\n"
+
     object Preference {
         const val PREFERENCE_NAME = "elmcontrol"
         const val PREF_DEVICE = "DEVICE"
