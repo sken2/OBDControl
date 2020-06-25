@@ -1,6 +1,4 @@
-package com.example.obdcontrol
-
-import kotlin.properties.Delegates
+package com.example.obdcontrol.obd2
 
 class OBDResponse(data : String, hasHeader : Boolean) {
     private var valid = false
