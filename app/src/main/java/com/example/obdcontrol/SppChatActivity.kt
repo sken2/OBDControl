@@ -13,10 +13,10 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.KeyEvent
-import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.fragment.app.DialogFragment
+import com.example.obdcontrol.obd2.OBDResponse
 import java.util.*
 
 class SppChatActivity : AppCompatActivity() {

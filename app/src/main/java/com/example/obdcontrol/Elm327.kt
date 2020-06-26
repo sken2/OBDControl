@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import com.example.obdcontrol.obd2.OBDResponse
 import java.io.*
 import java.lang.Exception
 import java.util.*
@@ -202,7 +203,7 @@ object Elm327 {
     }
 
     private class ReadTask() : Callable<Boolean> {
-        val stream = socket?.inputStream
+        val stream = BufferedInputStream(socket?.inputStream)
         override fun call(): Boolean {
             try {
                 stream?.run {
@@ -212,17 +213,20 @@ object Elm327 {
                     while (!Thread.interrupted()) {
                         val response = scanner.next()
                         Logging.receive(response + "$" + LF)//TODO remove "$" someday
-                        val obdResponse = OBDResponse(response, false).apply {
-                            if (this.isValid()) {
-                                Monitor.arriveed(this)
-                            }
-                        }
+//                        val obdResponse = OBDResponse(
+//                            response,
+//                            false
+//                        ).apply {
+//                            if (this.isValid()) {
+//                                Monitor.arriveed(this)
+//                            }
+//                        }
                     }
                 }
             } catch (e: Exception) {
                 Log.d(Const.TAG, "Elm327::ReadTask ${e.message}")
             } finally {
-                stream?.close()
+                stream.close()
             }
             return false
         }
