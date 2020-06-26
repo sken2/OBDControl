@@ -68,8 +68,8 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     override fun onDestroy() {
         service?.run {
             applicationContext.unbindService(connection)
-            super.onDestroy()
         }
+        super.onDestroy()
     }
 
     override fun onConnectionOpened() {
