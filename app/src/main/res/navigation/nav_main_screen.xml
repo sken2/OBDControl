@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_main_screen"
+    app:startDestination="@id/splashFragment">
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.example.obdcontrol.ui.SplashFragment"
+        android:label="SplashFragment" >
+        <action
+            android:id="@+id/action_splashFragment_to_loggingFragment"
+            app:destination="@id/loggingFragment" />
+        <action
+            android:id="@+id/action_splashFragment_to_sppChatFragment"
+            app:destination="@id/sppChatFragment" />
+        <action
+            android:id="@+id/action_splashFragment_to_deviceSearchFragment"
+            app:destination="@id/deviceSearchFragment" />
+        <action
+            android:id="@+id/action_splashFragment_to_optionFragment"
+            app:destination="@id/optionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/deviceSearchFragment"
+        android:name="com.example.obdcontrol.ui.DeviceSearchFragment"
+        android:label="DeviceSearchFragment" />
+    <fragment
+        android:id="@+id/optionFragment"
+        android:name="com.example.obdcontrol.ui.OptionFragment"
+        android:label="OptionFragment" />
+    <fragment
+        android:id="@+id/sppChatFragment"
+        android:name="com.example.obdcontrol.ui.SppChatFragment"
+        android:label="SppChatFragment" >
+        <action
+            android:id="@+id/action_sppChatFragment_to_loggingFragment"
+            app:destination="@id/loggingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loggingFragment"
+        android:name="com.example.obdcontrol.ui.LoggingFragment"
+        android:label="LoggingFragment" />
+</navigation>

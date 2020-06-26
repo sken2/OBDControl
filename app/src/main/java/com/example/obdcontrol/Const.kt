@@ -1,6 +1,7 @@
 package com.example.obdcontrol
 
 object Const {
+
     val TAG = "OdbConnect"
 
     val CR = "\r"
@@ -13,6 +14,7 @@ object Const {
 
     object Requests {
         val REQUEST_SELECT = 1234
+        val REQUEST_SAVE = 2345
     }
 
     object UUIDS {
