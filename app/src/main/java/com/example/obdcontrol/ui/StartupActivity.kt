@@ -13,13 +13,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.text.SpannableStringBuilder
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.findNavController
+import androidx.preference.PreferenceManager
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
 import com.example.obdcontrol.setup.NotificationSetup
@@ -28,8 +30,8 @@ import java.util.*
 
 class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener {
 
-    private val preference by lazy {
-        getSharedPreferences(Const.Preference.PREFERENCE_NAME, Context.MODE_PRIVATE)
+    val preference by lazy {
+        PreferenceManager.getDefaultSharedPreferences(this)
     }
     val adapter by lazy {
         BluetoothAdapter.getDefaultAdapter()
@@ -62,6 +64,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     override fun onResume() {
         Log.v(Const.TAG, "StartupActivity::onResume")
+        deviceName.text = getInformation()
         super.onResume()
     }
 
@@ -72,9 +75,25 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
         super.onDestroy()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        with(findNavController(R.id.nav_main_screen)) {
+            when (item.itemId) {
+                R.id.menu_logging -> navigate(R.id.action_global_loggingFragment)
+                R.id.menu_select -> navigate(R.id.action_global_deviceSearchFragment)
+                R.id.menu_settings -> navigate(R.id.action_global_optionFragment)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+    // implementation of ElmCommTask.ConnectionStateListener
     override fun onConnectionOpened() {
         runOnUiThread{
-            deviceName.text = "Connect"
+            deviceName.text = getInformation()
         }
     }
 
@@ -91,7 +110,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     override fun onConnectionClosed() {
         runOnUiThread {
-            deviceName.text = "Disconnect"
+            deviceName.text = getInformation()
         }
     }
 
@@ -119,6 +138,27 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
         findNavController(R.id.nav_main_screen).navigate(R.id.action_splashFragment_to_sppChatFragment)
     }
 
+    fun getInformation() : SpannableStringBuilder{
+        val builder = SpannableStringBuilder()
+        if (device != null) {
+            builder.append("${device?.name} : ")
+            if (service == null) {
+                builder.append("[Disconnect]")
+            } else {
+                service?.also {
+                    if (it.isConnected()) {
+                        builder.append( "[Connected]")
+                    } else {
+                        builder.append("[Disconnect]")
+                    }
+                }
+            }
+        } else {
+            builder.append("[None]")
+        }
+        return builder
+    }
+
     val connection = object : ServiceConnection {
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -130,7 +170,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
             Log.v(Const.TAG, "MainActivity::onServiceConnected()")
             val binder = service as ElmCommTask.LocalBinder
             this@StartupActivity.service = binder.getService()
-            afterBindQueue.first.invoke()
+            afterBindQueue.forEach { it.invoke() }
         }
     }
 

@@ -15,6 +15,7 @@ object Const {
     object Requests {
         val REQUEST_SELECT = 1234
         val REQUEST_SAVE = 2345
+        val SAVE_REQUEST = 4567
     }
 
     object UUIDS {

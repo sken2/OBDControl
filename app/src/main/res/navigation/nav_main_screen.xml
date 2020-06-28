@@ -22,7 +22,7 @@
     </fragment>
     <fragment
         android:id="@+id/deviceSearchFragment"
-        android:name="com.example.obdcontrol.ui.DeviceSearchFragment"
+        android:name="com.example.obdcontrol.ui.DeviceSelectFragment"
         android:label="DeviceSearchFragment" />
     <fragment
         android:id="@+id/optionFragment"
@@ -39,5 +39,5 @@
     <fragment
         android:id="@+id/loggingFragment"
         android:name="com.example.obdcontrol.ui.LoggingFragment"
-        android:label="LoggingFragment" />
+        android:label="LoggingFragment" /><action android:id="@+id/action_global_loggingFragment" app:destination="@id/loggingFragment"/><action android:id="@+id/action_global_deviceSearchFragment" app:destination="@id/deviceSearchFragment"/><action android:id="@+id/action_global_optionFragment" app:destination="@id/optionFragment"/>
 </navigation>

@@ -45,18 +45,21 @@ class SppChatFragment : Fragment() {
         }
         view.findViewById<Button>(R.id.button_start_monitor).apply {
             setOnClickListener {
-                val botton= it as Button
+                val button= it as Button
                 with(activity) {
                     if (this is StartupActivity) {
                         when (monitorStarted) {
-                            true -> {
-                                StartMonitorDialog(it).show(supportFragmentManager, "monitor")
-                                it.text = "Monitor"
-                                this.service?.send("ATMA")
-                            }
                             false -> {
-                                it.text = "Stop Monitor"
+                                StartMonitorDialog(it, {
+                                    this@apply.text = "Monitor Running"
+                                    this.service?.send(it)
+                                    monitorStarted = true
+                                }).show(supportFragmentManager, "monitor")
+                            }
+                            true -> {
+                                it.text = "Monitor"
                                 this.service?.send(" ")
+                                monitorStarted = false
                             }
                         }
                     }
@@ -79,14 +82,23 @@ class SppChatFragment : Fragment() {
 
     override fun onDestroyView() {
         Log.v(Const.TAG, "SppChatFragment::onDestroyView")
+        if (monitorStarted) {
+            with(activity) {
+                if (this is StartupActivity) {
+                    this.service?.send(" ")
+                }
+            }
+        }
+        monitorStarted = false
         super.onDestroyView()
     }
 
-    class StartMonitorDialog(val button : Button) : DialogFragment() {
+    class StartMonitorDialog(val button : Button, val callback : (command : String) ->Unit) : DialogFragment() {
 
-        val startupActivity : StartupActivity = activity as StartupActivity //!!
-        val editText = EditText(activity).apply {
-            setText("AT MA")
+        val editText by lazy {
+            EditText(activity).apply {
+                setText("AT MA")
+            }
         }
         // TODO preset buttons of reciever and transmitter
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -94,8 +106,7 @@ class SppChatFragment : Fragment() {
                 .setView(editText)
                 .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->  })
                 .setPositiveButton("Ok", DialogInterface.OnClickListener { dialog, witch ->
-                    startupActivity.service?.send(editText.text.toString())
-                    button.text = "Monitor Running"
+                    callback.invoke(editText.text.toString())
                 })
                 .create()
         }

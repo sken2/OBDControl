@@ -107,6 +107,13 @@ class ElmCommTask : Service(), Observer {
         }
     }
 
+    fun isConnected() : Boolean {
+        return if (socket != null)
+            true
+        else
+            false
+    }
+
     protected fun onOpenConnection() {
         openFuture?.run {
             try {

@@ -1,6 +1,11 @@
 package com.example.obdcontrol.ui
 
-import androidx.fragment.app.Fragment
+import android.os.Bundle
+import androidx.preference.PreferenceFragmentCompat
+import com.example.obdcontrol.R
 
-class OptionFragment : Fragment() {
+class OptionFragment : PreferenceFragmentCompat() {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.default_preference, rootKey)
+    }
 }

@@ -61,7 +61,6 @@ class DeviceSelectFragment : Fragment() {
                         }
                     }
                 }
-
             }
         }
         view.findViewById<Button>(R.id.button_pair_now).apply {

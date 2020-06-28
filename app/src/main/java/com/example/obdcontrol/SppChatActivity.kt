@@ -4,10 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
@@ -16,6 +14,7 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.fragment.app.DialogFragment
+import androidx.preference.PreferenceManager
 import com.example.obdcontrol.obd2.OBDResponse
 import java.util.*
 
@@ -23,30 +22,28 @@ class SppChatActivity : AppCompatActivity() {
 
     private var device : BluetoothDevice? = null
     private val logBox : TextView by lazy {
-        findViewById(R.id.chat_log) as TextView
+        findViewById<TextView>(R.id.chat_log)
     }
     private val sayBox : EditText by lazy {
-        findViewById(R.id.chat_say) as EditText
+        findViewById<EditText>(R.id.chat_say)
     }
     private val button1 : Button by lazy {
-        findViewById(R.id.button) as Button
+        findViewById<Button>(R.id.button)
     }
     private val button2 : Button by lazy {
-        findViewById(R.id.button2) as Button
+        findViewById<Button>(R.id.button2)
     }
     private val button3 : Button by lazy {
-        findViewById(R.id.button3) as Button
+        findViewById<Button>(R.id.button3)
     }
     private val clearButton : ImageButton by lazy {
-        findViewById(R.id.btn_clear) as ImageButton
+        findViewById<ImageButton>(R.id.btn_clear)
     }
     private val saveButton : ImageButton by lazy {
-        findViewById(R.id.btn_save) as ImageButton
+        findViewById<ImageButton>(R.id.btn_save)
     }
-    private val SAVE_REQUEST = 1234
-
     private val preference by lazy {
-        this.applicationContext.getSharedPreferences(Const.Preference.PREFERENCE_NAME, Context.MODE_PRIVATE)
+        PreferenceManager.getDefaultSharedPreferences(this)
     }
     private var monitorIsActive = false //超ダサいがcompanionは使いたくない
 
@@ -94,7 +91,7 @@ class SppChatActivity : AppCompatActivity() {
             val request = Intent(Intent.ACTION_CREATE_DOCUMENT)
                 .setType("taxt/plain")
                 .putExtra(Intent.EXTRA_TITLE, fileName)
-            startActivityForResult(request, SAVE_REQUEST)
+            startActivityForResult(request, Const.Requests.SAVE_REQUEST)
         }
         clearButton.setOnClickListener {
             ConfirmClearDialog("Clear Logging?", Runnable {
@@ -144,7 +141,7 @@ class SppChatActivity : AppCompatActivity() {
         }
         Log.v(Const.TAG, "SppChatActivity::onActivityResult request = $requestCode action = ${data.action} result = $resultCode")
         when(requestCode) {
-            SAVE_REQUEST -> {
+            Const.Requests.SAVE_REQUEST -> {
                 if (Activity.RESULT_OK == resultCode) {
                     data.data?.run {
                         contentResolver.openOutputStream(this)?.let {
@@ -210,11 +207,11 @@ class SppChatActivity : AppCompatActivity() {
     }
 
     class ButtonPresetDialog(val button : Button, val key : String) : DialogFragment() {
-        val preference : SharedPreferences by lazy {
-            this.context!!.getSharedPreferences(Const.Preference.PREFERENCE_NAME, Context.MODE_PRIVATE)
-        }
+
+        private val sppChatActivity = requireActivity() as SppChatActivity
+
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val presetText = preference.getString(key, "")
+            val presetText = sppChatActivity.preference.getString(key, "")
             val editText = EditText(activity).apply {
                 setText(presetText)
             }
@@ -222,7 +219,7 @@ class SppChatActivity : AppCompatActivity() {
                 .setView(editText)
                 .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->  })
                 .setPositiveButton("Ok") { dialog, witch ->
-                    preference.edit().putString(key, editText.text.toString()).apply()
+                    sppChatActivity.preference.edit().putString(key, editText.text.toString()).apply()
                     button.text = editText.text
                     Toast.makeText(activity, editText.text, Toast.LENGTH_SHORT).show()
                 }

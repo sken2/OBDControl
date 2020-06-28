@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -39,12 +40,12 @@ class LoggingFragment : Fragment() {
         Log.v(Const.TAG, "LoggingFragment::onViewCreated")
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<Button>(R.id.button_clear).apply {
+        view.findViewById<ImageButton>(R.id.button_clear).apply {
             setOnClickListener {
                 Toast.makeText(activity, "Comming Soon!!!", Toast.LENGTH_SHORT).show()  //TODO
             }
         }
-        view.findViewById<Button>(R.id.button_save).apply {
+        view.findViewById<ImageButton>(R.id.button_save).apply {
             setOnClickListener {
                 Toast.makeText(activity, "Comming Soon!!!", Toast.LENGTH_SHORT).show()  //TODO
             }
