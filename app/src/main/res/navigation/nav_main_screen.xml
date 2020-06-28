@@ -39,5 +39,5 @@
     <fragment
         android:id="@+id/loggingFragment"
         android:name="com.example.obdcontrol.ui.LoggingFragment"
-        android:label="LoggingFragment" /><action android:id="@+id/action_global_loggingFragment" app:destination="@id/loggingFragment"/><action android:id="@+id/action_global_deviceSearchFragment" app:destination="@id/deviceSearchFragment"/><action android:id="@+id/action_global_optionFragment" app:destination="@id/optionFragment"/>
+        android:label="LoggingFragment" /><action android:id="@+id/action_global_loggingFragment" app:destination="@id/loggingFragment"/><action android:id="@+id/action_global_deviceSearchFragment" app:destination="@id/deviceSearchFragment"/><action android:id="@+id/action_global_optionFragment" app:destination="@id/optionFragment"/><action android:id="@+id/action_global_sppChatFragment" app:destination="@id/sppChatFragment"/>
 </navigation>

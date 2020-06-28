@@ -81,7 +81,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        with(findNavController(R.id.nav_main_screen)) {
+        with(findNavController(R.id.fragment_main_screen)) {
             when (item.itemId) {
                 R.id.menu_logging -> navigate(R.id.action_global_loggingFragment)
                 R.id.menu_select -> navigate(R.id.action_global_deviceSearchFragment)
@@ -135,7 +135,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     }
 
     private fun goChat() {
-        findNavController(R.id.nav_main_screen).navigate(R.id.action_splashFragment_to_sppChatFragment)
+        findNavController(R.id.fragment_main_screen).navigate(R.id.action_global_sppChatFragment)
     }
 
     fun getInformation() : SpannableStringBuilder{
