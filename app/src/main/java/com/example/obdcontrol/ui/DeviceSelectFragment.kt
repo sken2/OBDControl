@@ -15,13 +15,16 @@ import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
 import com.example.obdcontrol.adapters.BtDevicesAdapter
 
-class DeviceSearchFragment : Fragment() {
+class DeviceSelectFragment : Fragment() {
 
     private val adapter by lazy {
         BtDevicesAdapter()
     }
     private val preference by lazy {
-        context?.getSharedPreferences(Const.Preference.PREFERENCE_NAME, Context.MODE_PRIVATE)
+        startupActivity.preference
+    }
+    private val startupActivity by lazy {
+        activity as StartupActivity
     }
 
     override fun onCreateView(
@@ -33,7 +36,7 @@ class DeviceSearchFragment : Fragment() {
         val contentView = inflater.inflate(R.layout.fragment_select_device, container, false)
         contentView.findViewById<RecyclerView>(R.id.recycler_devices)?.apply {
             layoutManager = LinearLayoutManager(view?.context)
-            adapter = this@DeviceSearchFragment.adapter
+            adapter = this@DeviceSelectFragment.adapter
         }
         return contentView
     }
@@ -47,10 +50,18 @@ class DeviceSearchFragment : Fragment() {
                 val select = adapter.selected
                 if (select != -1) {
                     val device = adapter.list.get(select)
-                    preference?.apply {
-                        edit().putString(Const.Preference.PREF_DEVICE, device.address).apply()
+                    if (activity is StartupActivity) {
+                        val startupActivity = activity as StartupActivity
+                        startupActivity.preference.apply {
+                            edit().putString(Const.Preference.PREF_DEVICE, device.address).apply()
+                        }
+                        with(startupActivity) {
+                            this.device = device
+                            deviceName.text = getInformation()
+                        }
                     }
                 }
+
             }
         }
         view.findViewById<Button>(R.id.button_pair_now).apply {
