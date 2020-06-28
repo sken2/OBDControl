@@ -75,6 +75,9 @@ class ElmCommTask : Service(), Observer {
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.v(Const.TAG, "ElmCommTask::onUnbind")
+        listenFuture?.run {
+            stopListen()
+        }
         socket?.run {
             closeComm()
         }
@@ -142,9 +145,26 @@ class ElmCommTask : Service(), Observer {
         initFuture = null
     }
 
-    protected fun startListen() {
+    fun startListen() {
+        Log.v(Const.TAG, "ElmCommTask::startListen")
         socket?.run {
             listenFuture = executor.submit(MonitorTask(this@ElmCommTask))
+        }
+    }
+
+    fun stopListen() {
+        Log.v(Const.TAG, "ElmCommTask::stopListen")
+        listenFuture?.run {
+            cancel(true)
+            try {
+                get()
+            } catch (e : InterruptedException) {
+                //
+            } catch (e : java.lang.Exception) {
+                disposer?.dispose(e)
+            } finally {
+                listenFuture = null
+            }
         }
     }
 
@@ -283,7 +303,7 @@ class ElmCommTask : Service(), Observer {
             try {
                 scanner?.run {
                     while (!Thread.interrupted()) {
-                        val message = readLine()
+                        val message = next()
                         if (message == null) {
                             break
                         }
