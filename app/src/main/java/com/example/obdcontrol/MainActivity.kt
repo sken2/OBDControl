@@ -9,11 +9,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.session.MediaSession
-import android.media.session.MediaSessionManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.MediaController
 import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
@@ -52,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             synchronized (this) {
                 val chat = Intent(this.applicationContext, ConnectingDeviceActivity::class.java)
                 adapter?.run {
-                    val address = preference.getString(Const.Preference.PREF_DEVICE, "")
+                    val address = preference.getString(Const.Preference.KEY_DEVICE, "")
                     val device = this.getRemoteDevice(address)
                     chat.putExtra(BluetoothDevice.EXTRA_DEVICE, device)
                     startActivityForResult(chat, Const.Requests.REQUEST_SELECT)
@@ -69,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         selectDevice.isEnabled = true
-        val address = preference.getString(Const.Preference.PREF_DEVICE, "")
+        val address = preference.getString(Const.Preference.KEY_DEVICE, "")
         previousDevice.text = when (address) {
             "" -> {
                 "No Device"

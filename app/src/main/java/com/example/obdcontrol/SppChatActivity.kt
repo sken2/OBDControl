@@ -60,7 +60,7 @@ class SppChatActivity : AppCompatActivity() {
             Toast.makeText(this, "No Device", Toast.LENGTH_SHORT).show()
             finishActivity(255)
         }
-        preference.edit().putString(Const.Preference.PREF_DEVICE, device?.address).apply()
+        preference.edit().putString(Const.Preference.KEY_DEVICE, device?.address).apply()
         sayBox.setOnEditorActionListener(editWatcher)
         logBox.movementMethod = ScrollingMovementMethod()
         if (!Elm327.isConnected()) {

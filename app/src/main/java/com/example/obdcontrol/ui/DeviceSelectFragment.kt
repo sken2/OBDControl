@@ -1,6 +1,5 @@
 package com.example.obdcontrol.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -53,7 +52,7 @@ class DeviceSelectFragment : Fragment() {
                     if (activity is StartupActivity) {
                         val startupActivity = activity as StartupActivity
                         startupActivity.preference.apply {
-                            edit().putString(Const.Preference.PREF_DEVICE, device.address).apply()
+                            edit().putString(Const.Preference.KEY_DEVICE, device.address).apply()
                         }
                         with(startupActivity) {
                             this.device = device

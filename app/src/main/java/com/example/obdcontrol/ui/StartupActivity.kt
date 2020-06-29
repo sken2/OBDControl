@@ -144,7 +144,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
         service?.let {
             if (it.isConnected()) return
         }
-        val address = preference.getString(Const.Preference.PREF_DEVICE, "")
+        val address = preference.getString(Const.Preference.KEY_DEVICE, "")
         if (address!!.isNotEmpty()) {
             device = adapter?.getRemoteDevice(address)?.also {
                 Intent(this.applicationContext, ElmCommTask::class.java).apply {

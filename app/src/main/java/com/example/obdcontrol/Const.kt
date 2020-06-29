@@ -9,7 +9,7 @@ object Const {
 
     object Preference {
         const val PREFERENCE_NAME = "elmcontrol"
-        const val PREF_DEVICE = "DEVICE"
+        const val KEY_DEVICE = "DEVICE"
     }
 
     object Requests {
