@@ -66,7 +66,7 @@ class BtDevicesAdapter : RecyclerView.Adapter<BtDevicesAdapter.ViewHolder>() {
     }
 
     inner class ViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
-        val name = view.findViewById<TextView>(R.id.text_idem_device_name)
+        val name = view.findViewById<TextView>(R.id.text_item_device_name)
         val select = view.findViewById<ImageButton>(R.id.button_item_select)
     }
 }
