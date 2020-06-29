@@ -64,7 +64,6 @@ class SppChatFragment : Fragment() {
                         }
                     }
                 }
-//                Toast.makeText(context, "MONITOR, Comming soon!", Toast.LENGTH_SHORT).show()//TODO
             }
         }
         val edit = view.findViewById<EditText>(R.id.edit_command).apply {
@@ -97,7 +96,7 @@ class SppChatFragment : Fragment() {
 
         val editText by lazy {
             EditText(activity).apply {
-                setText("AT MA")
+                setText("AT MT C0")
             }
         }
         // TODO preset buttons of reciever and transmitter

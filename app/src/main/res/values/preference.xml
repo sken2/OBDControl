@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="checkbox_autoconnect">autoboot</string>
+    <string name="checkbox_background">background</string>
+    <string name="edit_initial_commands">commands</string>
+    <string name="value_device_address">MAC</string>
+    <string name="value_mt_pid">mtPid</string>
+    <string name="value_mr_pid">mrPid</string>
+    <string name="title_elm_config">ELM327 Configuration</string>
+    <string name="title_check_auto_connect">Auto connect when app stated</string>
+    <string name="title_check_auto_background">Go background after connect</string>
+</resources>

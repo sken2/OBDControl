@@ -14,6 +14,9 @@ import com.example.obdcontrol.R
 
 class SplashFragment : Fragment() {
 
+    val startupActivity by lazy {
+        activity as StartupActivity
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -28,25 +31,10 @@ class SplashFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         view.findViewById<Button>(R.id.button_connect)?.apply {
             setOnClickListener{
+//                startupActivity.connect()
                 Toast.makeText(context, "Connected(maybe)", Toast.LENGTH_SHORT).show()
-//                findNavController().navigate(R.id.action_splashFragment_to_sppChatFragment) //TODO
             }
         }
-//        view.findViewById<Button>(R.id.button_search)?.apply {
-//            setOnClickListener{
-//                findNavController().navigate(R.id.action_splashFragment_to_deviceSearchFragment)
-//            }
-//        }
-//        view.findViewById<Button>(R.id.button_setup_option)?.apply {
-//            setOnClickListener{
-//                findNavController().navigate(R.id.action_splashFragment_to_optionFragment)
-//            }
-//        }
-//        view.findViewById<Button>(R.id.button_show_log)?.apply {
-//            setOnClickListener{
-//                findNavController().navigate(R.id.action_splashFragment_to_loggingFragment)
-//            }
-//        }
         view.findViewById<Button>(R.id.button_start_chat).apply {
             setOnClickListener {
                 findNavController().navigate(R.id.action_splashFragment_to_sppChatFragment)

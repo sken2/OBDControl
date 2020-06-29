@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/checkbox_autoconnect"
+        android:title="@string/checkbox_autoconnect" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/checkbox_background"
+        android:title="@string/title_check_auto_background" />
+    <PreferenceCategory android:title="@string/title_elm_config" />
+    <EditTextPreference
+        android:defaultValue="Default value"
+        android:key="@string/edit_initial_commands"
+        android:selectAllOnFocus="true"
+        android:singleLine="false"
+        android:title="Commands to initialize" />
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@android:array/emailAddressTypes"
+        android:entryValues="@android:array/emailAddressTypes"
+        android:key="list_preference_1"
+        android:title="List preference" />
 </PreferenceScreen>

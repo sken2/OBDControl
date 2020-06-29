@@ -19,6 +19,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
@@ -48,6 +49,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     private var autostartChat = true
     private var autostartControl = false
+    private lateinit var connectSwitch : SwitchCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(Const.TAG, "StartupActivity::onCreate")
@@ -59,7 +61,9 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
         }
         NotificationSetup.makeChannel(this)
         setContentView(R.layout.activity_startup)
-        connect()
+        if (preference.getBoolean(getString(R.string.checkbox_autoconnect), false) ) {
+            connect()
+        }
     }
 
     override fun onResume() {
@@ -77,6 +81,19 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
+        menu?.findItem(R.id.app_bar_switch)?.actionView?.run {
+            findViewById<SwitchCompat>(R.id.switch_connection)?.apply {
+                connectSwitch = this
+                setOnCheckedChangeListener {view, isCheched ->
+                    Log.v(Const.TAG, "StartupActivity::onChanged")
+                    if (this.isChecked) {
+                        connect()
+                    } else {
+                        disconnect()
+                    }
+                }
+            }
+        }
         return true
     }
 
@@ -92,12 +109,17 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     }
     // implementation of ElmCommTask.ConnectionStateListener
     override fun onConnectionOpened() {
+        Log.v(Const.TAG, "StartupActivity::onConnectionOpened")
         runOnUiThread{
             deviceName.text = getInformation()
+            if (!connectSwitch.isChecked) {
+                connectSwitch.isChecked = true
+            }
         }
     }
 
     override fun onConectionInitialized() {
+        Log.v(Const.TAG, "StartupActivity::onConnectionInitialized")
         // TODO
         when {
             autostartChat -> {goChat()}
@@ -109,12 +131,19 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     }
 
     override fun onConnectionClosed() {
+        Log.v(Const.TAG, "StartupActivity::onConnectionClosed")
         runOnUiThread {
             deviceName.text = getInformation()
+            if (connectSwitch.isChecked) {
+                connectSwitch.isChecked = false
+            }
         }
     }
 
     protected fun connect() {
+        service?.let {
+            if (it.isConnected()) return
+        }
         val address = preference.getString(Const.Preference.PREF_DEVICE, "")
         if (address!!.isNotEmpty()) {
             device = adapter?.getRemoteDevice(address)?.also {
@@ -131,6 +160,15 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
             }
         } else {
             deviceName.text = "[No device selected]"
+        }
+    }
+
+    protected fun disconnect() {
+        service?.let {
+            if (it.isConnected()) {
+                service?.closeComm()
+//                applicationContext.unbindService(connection)
+            }
         }
     }
 
@@ -162,15 +200,20 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     val connection = object : ServiceConnection {
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            Log.v(Const.TAG, "MainActivity::onServiceDisconnected()")
+            Log.v(Const.TAG, "StartupActivity::onServiceDisconnected()")
             service = null
         }
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            Log.v(Const.TAG, "MainActivity::onServiceConnected()")
+            Log.v(Const.TAG, "StartupActivity::onServiceConnected()")
             val binder = service as ElmCommTask.LocalBinder
             this@StartupActivity.service = binder.getService()
             afterBindQueue.forEach { it.invoke() }
+        }
+
+        override fun onBindingDied(name: ComponentName?) {
+            Log.v(Const.TAG, "StartupActivity::onBindingDied")
+            super.onBindingDied(name)
         }
     }
 

@@ -16,9 +16,6 @@
         <action
             android:id="@+id/action_splashFragment_to_deviceSearchFragment"
             app:destination="@id/deviceSearchFragment" />
-        <action
-            android:id="@+id/action_splashFragment_to_optionFragment"
-            app:destination="@id/optionFragment" />
     </fragment>
     <fragment
         android:id="@+id/deviceSearchFragment"
