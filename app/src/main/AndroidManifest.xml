@@ -21,23 +21,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ConnectingDeviceActivity" />
-        <activity android:name=".SppChatActivity" />
-        <activity android:name=".SelectDeviceActivity" />
-        <activity
-            android:name=".BtScanActivity"
-            android:label="@string/title_activity_bt_scan"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="BluetoothDevice.ACTION_FOUND" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".MainActivity">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-        </activity>
         <service android:name=".task.ElmCommTask"/>
     </application>
 
