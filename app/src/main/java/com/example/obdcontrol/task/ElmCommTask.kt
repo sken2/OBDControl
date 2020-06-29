@@ -10,20 +10,18 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.preference.PreferenceManager
 import com.example.obdcontrol.BadAccidentDisposer
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.Logging
+import com.example.obdcontrol.R
 import com.example.obdcontrol.setup.BluetoothSetup
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.nio.charset.Charset
 import java.util.*
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeoutException
-import kotlin.Exception
+import java.util.concurrent.*
 
 class ElmCommTask : Service(), Observer {
 
@@ -37,6 +35,9 @@ class ElmCommTask : Service(), Observer {
     private var listener : ConnectionStateListener? = null
     lateinit var delimiter : String
     private var deviceName = ""
+    private val preferece by lazy {
+        PreferenceManager.getDefaultSharedPreferences(this)
+    }
 
     override fun onCreate() {
         Log.v(Const.TAG, "ElmCommTask::onCreate")
@@ -75,13 +76,14 @@ class ElmCommTask : Service(), Observer {
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.v(Const.TAG, "ElmCommTask::onUnbind")
+        openFuture?.cancel(true)
+        initFuture?.cancel(true)
         listenFuture?.run {
             stopListen()
         }
         socket?.run {
             closeComm()
         }
-        socket = null
         disposer = null
         return super.onUnbind(intent)
     }
@@ -93,6 +95,7 @@ class ElmCommTask : Service(), Observer {
             } catch (e : Exception) {
                 disposer?.dispose(e)
             } finally {
+                socket = null
                 onConnectionDisconnected()
             }
         }
@@ -111,10 +114,7 @@ class ElmCommTask : Service(), Observer {
     }
 
     fun isConnected() : Boolean {
-        return if (socket != null)
-            true
-        else
-            false
+        return socket != null
     }
 
     protected fun onOpenConnection() {
@@ -123,20 +123,25 @@ class ElmCommTask : Service(), Observer {
                 socket = this.get()
                 socket?.let {
                     BluetoothSetup.addObserver(this@ElmCommTask)
+                    listener?.onConnectionOpened()
                     initFuture = executor.submit(InitTask(this@ElmCommTask))
                 }
-            } catch (e : Exception) {
+            } catch (e : CancellationException) {
+                Log.i(Const.TAG, "ElmCommTask::onOpenConnection : canceled")
+            }catch (e : Exception) {
                 disposer?.dispose(e)
             }
         }
         openFuture = null
     }
 
-    protected fun onInitializeDevice() {
+    protected fun onDeviceInitialized() {
         try {
             val result = initFuture?.get()
             Toast.makeText(this, "Initialize complete $result", Toast.LENGTH_SHORT).show()
             startListen()
+        } catch (e : CancellationException) {
+            Log.i(Const.TAG, "ElmCommTask::onInitializeDevice : canceled")
         } catch (e : Exception) {
             disposer?.dispose(e)
         } finally {
@@ -170,14 +175,14 @@ class ElmCommTask : Service(), Observer {
 
     private fun onConnectionDisconnected(e : Exception? = null) {
         Log.i(Const.TAG, "ElmCommTask::onConnectionDisconnected ${e?.message}")
-        e?.run {
-            closeComm()
-        }
         listener?.onConnectionClosed()
     }
 
     private fun getInitializeCommands() : List<String>{
-        return listOf("ATE0", "ATH1")
+        val initCommands = preferece.getString(
+            getString(R.string.edit_initial_commands),
+            "ATZ\nATE0\nATH1\nATSP6") as String
+        return initCommands.split("\n")
     }
 
     fun send(message : String) {
@@ -194,44 +199,43 @@ class ElmCommTask : Service(), Observer {
         val buffer = ByteArray(1024)
         var position = 0
         socket?.inputStream?.run {
-            try {
-                while (!Thread.interrupted()) {
-                    val watchDog = Thread {
-                        try {
-                            Thread.sleep(500)
-                            throw TimeoutException("read timed out")
-                        } catch (e : Exception) {
-                            //
+            BufferedInputStream(this).run {
+                try {
+                    var count = 0
+                    while (!Thread.interrupted()) {
+                        Thread.sleep(10)
+                        val chars = read(buffer, position, this.available())
+                        position += chars
+                        val msgInBuffer = buffer.copyOfRange(0, position)
+                        Log.d(Const.TAG, "ElmCommTask::waitOk read chars = $chars buffer = ${msgInBuffer.toString(Charset.defaultCharset())} ")
+                        if (buffer.copyOfRange(0, position).toString(Charset.defaultCharset()).indexOf(expect) != -1) {
+                            break
                         }
-                    }.apply {
-                        this.start()
+                        if (count++ > 10) {
+                            break
+                        }
                     }
-                    Thread.sleep(50)
-                    val chars = this.read(buffer, position, buffer.size)
-                    watchDog.interrupt()
-                    Log.d(Const.TAG, "ElmCommTask::waitOk read chars = $chars")
-                    position += chars
-                    if (buffer.copyOfRange(0, position).toString(Charset.defaultCharset()).indexOf(expect) != -1) {
-                        break
+                    val response = buffer.copyOfRange(0, position).toString(Charset.defaultCharset())
+                    Logging.receive(response)
+                    when {
+                        response.indexOf("?") != -1-> {
+                            return false
+                        }
+                        response.indexOf("OK") != -1-> {
+                            return true
+                        }
+                        else -> {
+                            Log.e(Const.TAG, "ElmCommTask::waitOk no response identifier")
+                            return false
+                        }  // something wrong
                     }
+                } catch (e : TimeoutException) {
+                    //
+                } catch (e : IOException) {
+                    onConnectionDisconnected(e)
+                } catch (e: Exception) {
+                    disposer?.dispose(e)
                 }
-                val response = buffer.copyOfRange(0, position).toString(Charset.defaultCharset())
-                Logging.receive(response)
-                when {
-                    response.indexOf("?") != -1-> {
-                        return false
-                    }
-                    response.indexOf("OK") != -1-> {
-                        return true
-                    }
-                    else -> {}  // something wrong
-                }
-            } catch (e : TimeoutException) {
-                //
-            } catch (e : IOException) {
-                onConnectionDisconnected(e)
-            } catch (e: Exception) {
-                disposer?.dispose(e)
             }
         }
         if (position != 0) {
@@ -273,7 +277,8 @@ class ElmCommTask : Service(), Observer {
                     service.waitOk()
                     service.getInitializeCommands().forEach {
                         service.send(it)
-                        initializeSuccess = initializeSuccess and service.waitOk()
+                        val result = service.waitOk()
+                        initializeSuccess = initializeSuccess and result
                     }
                 }
             } catch (e : IOException) {
@@ -282,7 +287,7 @@ class ElmCommTask : Service(), Observer {
                 service.disposer?.dispose(e)
             } finally {
                 service.handler.post{
-                    service.onInitializeDevice()
+                    service.onDeviceInitialized()
                 }
                 return initializeSuccess
             }
