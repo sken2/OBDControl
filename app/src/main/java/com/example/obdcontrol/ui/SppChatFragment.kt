@@ -1,10 +1,8 @@
 package com.example.obdcontrol.ui
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -16,14 +14,16 @@ import android.widget.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
-import com.example.obdcontrol.Elm327
-import com.example.obdcontrol.Logging
 import com.example.obdcontrol.R
+import com.example.obdcontrol.adapters.CommandHistoryAdapter
 
 class SppChatFragment : Fragment() {
 
     private var monitorStarted = false
+    private val historyAdapter = CommandHistoryAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,8 +74,13 @@ class SppChatFragment : Fragment() {
                 if (context is StartupActivity) {
                     val activity = context as StartupActivity
                     activity.service?.send(edit.text.toString())
+                    historyAdapter.issue(edit.text.toString())
                 }
             }
+        }
+        view.findViewById<RecyclerView>(R.id.recycler_command_history).apply {
+            layoutManager = GridLayoutManager(this.context, 5)
+            adapter = historyAdapter
         }
     }
 
@@ -99,7 +104,7 @@ class SppChatFragment : Fragment() {
                 setText("AT MT C0")
             }
         }
-        // TODO preset buttons of reciever and transmitter
+        // TODO preset buttons for reciever and transmitter
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             return AlertDialog.Builder(activity)
                 .setView(editText)
