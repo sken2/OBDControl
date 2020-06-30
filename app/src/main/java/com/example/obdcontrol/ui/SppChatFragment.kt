@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
 import com.example.obdcontrol.adapters.CommandHistoryAdapter
+import com.example.obdcontrol.adapters.CommandHistoryLayoutManager
 
 class SppChatFragment : Fragment() {
 
@@ -79,7 +80,8 @@ class SppChatFragment : Fragment() {
             }
         }
         view.findViewById<RecyclerView>(R.id.recycler_command_history).apply {
-            layoutManager = GridLayoutManager(this.context, 5)
+//            layoutManager = GridLayoutManager(this.context, 5)
+            layoutManager = CommandHistoryLayoutManager()
             adapter = historyAdapter
         }
     }
