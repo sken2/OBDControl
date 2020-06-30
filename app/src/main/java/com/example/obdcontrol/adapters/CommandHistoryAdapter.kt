@@ -36,7 +36,7 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
             history.remove(command) // replace old history to top
             history.add(command)
             while (history.size > 10) { // TODO look for more better way
-                history.removeAt(1)
+                history.removeAt(0)
             }
         }
         notifyDataSetChanged()
