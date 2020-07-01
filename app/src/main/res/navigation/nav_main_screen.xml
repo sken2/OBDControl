@@ -32,9 +32,16 @@
         <action
             android:id="@+id/action_sppChatFragment_to_loggingFragment"
             app:destination="@id/loggingFragment" />
+        <action
+            android:id="@+id/action_sppChatFragment_to_monitoringFragment"
+            app:destination="@id/monitoringFragment" />
     </fragment>
     <fragment
         android:id="@+id/loggingFragment"
         android:name="com.example.obdcontrol.ui.LoggingFragment"
         android:label="LoggingFragment" /><action android:id="@+id/action_global_loggingFragment" app:destination="@id/loggingFragment"/><action android:id="@+id/action_global_deviceSearchFragment" app:destination="@id/deviceSearchFragment"/><action android:id="@+id/action_global_optionFragment" app:destination="@id/optionFragment"/><action android:id="@+id/action_global_sppChatFragment" app:destination="@id/sppChatFragment"/>
+    <fragment
+        android:id="@+id/monitoringFragment"
+        android:name="com.example.obdcontrol.ui.MonitoringFragment"
+        android:label="MonitoringFragment" />
 </navigation>
