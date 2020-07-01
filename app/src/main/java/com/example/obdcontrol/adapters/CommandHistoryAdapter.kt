@@ -2,12 +2,15 @@ package com.example.obdcontrol.adapters
 
 import android.content.SharedPreferences
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
+import com.example.obdcontrol.R
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -15,11 +18,14 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
 
     val history = mutableListOf<String>()
     lateinit var preference : SharedPreferences
+    lateinit var selectionTracker : SelectionTracker<String>
+    lateinit var recyclerView : RecyclerView
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         Log.v(Const.TAG, "CommandHistoryAdapter::onCreateViewHolder")
-        preference = PreferenceManager.getDefaultSharedPreferences(parent.context.applicationContext)
-        val historyView = TextView(parent.context)
+
+        val historyView = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_command_text, parent, false)
         return ViewHolder(historyView)
     }
 
@@ -28,30 +34,44 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        with(holder.itemView) {
-            if (this is TextView) {
-                this.text = history.get(position)
-            }
+
+        val commandText = holder.view.findViewById<TextView>(R.id.text_command_item)
+        with(commandText) {
+            val command = history.get(position)
+//            holder.bind(command, selectionTracker.isSelected(command)) // have to do: where is bind ?
+            this.text = command
         }
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         Log.v(Const.TAG, "CommandHistoryAdapter::onAttachedToRecyclerViw")
-        val commands = preference.getString(Const.Preference.KEY_COMMAND, "{}")!!
+        preference = PreferenceManager.getDefaultSharedPreferences(recyclerView.context.applicationContext)
+        this.recyclerView = recyclerView
+        val commands = preference.getString(Const.Preference.KEY_HISTORY, "[]")!!
         val ja = JSONArray(commands)
-        for (index in 0..ja.length()) {
-            history.add(ja.get(index).toString())
+        if (ja.length() != 0) {
+            for (index in 0..ja.length()-1) {
+                history.add(ja.get(index).toString())
+            }
+        }
+        // no setSelectionTrasker ?
+        selectionTracker = SelectionTracker.Builder<String>(
+            "selecction-id",
+            recyclerView,
+            HistoryKeyprovider(1, history),
+            itemDatilLookup,
+            StorageStrategy.createStringStorage()
+        ).build().apply {
+            addObserver(actionObserver)
         }
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        Log.v(Const.TAG, "CommandHistoryAdapter::onDetachedFromRecyclerViw")
-        val ja = JSONArray()
-        history.forEach {
-            val historyJson = JSONObject(it)
-            ja.put(historyJson)
+        Log.v(Const.TAG, "CommandHistoryAdapter::onDetachedFromRecyclerView")
+        if (history.isNotEmpty()) {
+            val ja = JSONArray(history)
+            preference.edit().putString(Const.Preference.KEY_HISTORY, ja.toString()).apply()
         }
-        preference.edit().putString(Const.Preference.KEY_COMMAND, ja.toString()).apply()
     }
 
     fun issue(command : String) {
@@ -65,7 +85,66 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
         notifyDataSetChanged()
     }
 
+    private var itemDatilLookup = object : ItemDetailsLookup<String>() {
+
+        override fun getItemDetails(e: MotionEvent): ItemDetails<String>? {
+            val view = recyclerView.findChildViewUnder(e.getX(), e.getY())
+            view?.run {
+                val viewHolder = recyclerView.getChildViewHolder(view)
+                if (viewHolder is CommandHistoryAdapter.ViewHolder) {
+                    return viewHolder.getItemDetails()
+                }
+            }
+            return null
+        }
+    }
+
+    private val actionModeCallback = object : ActionMode.Callback {
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            Log.v(Const.TAG, "CommandHistoryAdapter::onActionItemClicked $mode $item")
+            return false
+        }
+
+        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            Log.v(Const.TAG, "CommandHistoryAdapter::onCreateActionMode $mode")
+            return false
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            Log.v(Const.TAG, "CommandHistoryAdapter::onPrepareActionMode $mode")
+            return false
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode?) {
+            Log.v(Const.TAG, "CommandHistoryAdapter::onDestroyActionMode $mode")
+            selectionTracker.clearSelection()
+        }
+    }
+
+    private object actionObserver : SelectionTracker.SelectionObserver<String>() {
+
+        override fun onSelectionChanged() {
+            super.onSelectionChanged()
+        }
+    }
+
+    //    inner class ViewHolder(val view : View) : RecyclerView.ViewHolder(view), ViewholderWithDetail { // where is ViewholderWithDetail ?
     inner class ViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
 
+        fun getItemDetails() : ItemDetails {
+            return ItemDetails(absoluteAdapterPosition, history.get(absoluteAdapterPosition))
+        }
+    }
+
+    inner class ItemDetails(private val adapterPosition : Int, private val selectionKey : String)
+        : ItemDetailsLookup.ItemDetails<String>() {
+
+        override fun getPosition(): Int {
+            return adapterPosition
+        }
+
+        override fun getSelectionKey(): String? {
+            return selectionKey
+        }
     }
 }
