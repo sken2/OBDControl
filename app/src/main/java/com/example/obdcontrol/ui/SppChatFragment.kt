@@ -3,28 +3,34 @@ package com.example.obdcontrol.ui
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.selection.ItemKeyProvider
+import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
+import com.example.obdcontrol.Logging
 import com.example.obdcontrol.R
 import com.example.obdcontrol.adapters.CommandHistoryAdapter
 import com.example.obdcontrol.adapters.CommandHistoryLayoutManager
+import com.example.obdcontrol.adapters.HistoryKeyprovider
+import org.w3c.dom.Text
+import java.io.OutputStream
 
 class SppChatFragment : Fragment() {
 
     private var monitorStarted = false
     private val historyAdapter = CommandHistoryAdapter()
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +45,7 @@ class SppChatFragment : Fragment() {
         Log.v(Const.TAG, "SppChatFragment::onViewCreated")
         super.onViewCreated(view, savedInstanceState)
 
+        recyclerView = view.findViewById(R.id.recycler_command_history)
         view.findViewById<Button>(R.id.button_show_log).apply {
             setOnClickListener {
                 findNavController().navigate(R.id.action_sppChatFragment_to_loggingFragment)
@@ -79,10 +86,14 @@ class SppChatFragment : Fragment() {
                 }
             }
         }
-        view.findViewById<RecyclerView>(R.id.recycler_command_history).apply {
-//            layoutManager = GridLayoutManager(this.context, 5)
+        recyclerView.apply {
             layoutManager = CommandHistoryLayoutManager()
             adapter = historyAdapter
+        }
+        view.findViewById<TextView>(R.id.text_dialog).apply {
+            setOnClickListener {
+                this.text = Logging.getMessage()
+            }
         }
     }
 
@@ -95,6 +106,7 @@ class SppChatFragment : Fragment() {
                 }
             }
         }
+        recyclerView.adapter = null
         monitorStarted = false
         super.onDestroyView()
     }

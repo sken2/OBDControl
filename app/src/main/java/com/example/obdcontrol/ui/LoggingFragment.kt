@@ -1,6 +1,7 @@
 package com.example.obdcontrol.ui
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
@@ -8,10 +9,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.Logging
@@ -42,12 +44,19 @@ class LoggingFragment : Fragment() {
 
         view.findViewById<ImageButton>(R.id.button_clear).apply {
             setOnClickListener {
-                Toast.makeText(activity, "Comming Soon!!!", Toast.LENGTH_SHORT).show()  //TODO
+                activity?.let {
+                    ConfirmClearDialog("Clear Logging ?", Runnable { Logging.clear() } )
+                        .show(it.supportFragmentManager, "clear")
+                }
             }
         }
         view.findViewById<ImageButton>(R.id.button_save).apply {
             setOnClickListener {
-                Toast.makeText(activity, "Comming Soon!!!", Toast.LENGTH_SHORT).show()  //TODO
+                val fileName = getFilenameToSave()
+                val request = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .setType("taxt/plain")
+                    .putExtra(Intent.EXTRA_TITLE, fileName)
+                startActivityForResult(request, Const.Requests.SAVE_REQUEST)
             }
         }
     }
@@ -83,6 +92,22 @@ class LoggingFragment : Fragment() {
                     }
                 }
             }
+        }
+    }
+
+    private fun getFilenameToSave() :String {
+        return "Elm327log.txt"
+   }
+
+    class ConfirmClearDialog(val title : String, val callback : Runnable) : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
+            return AlertDialog.Builder(requireContext())
+                .setTitle(title)
+                .setNegativeButton("Cancel", { dialog, which ->})
+                .setPositiveButton("Ok") { dialog, which ->
+                    callback.run()
+                }
+                .create()
         }
     }
 
