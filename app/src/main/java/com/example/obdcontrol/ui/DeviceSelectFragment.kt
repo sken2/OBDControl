@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
@@ -46,18 +47,14 @@ class DeviceSelectFragment : Fragment() {
 
         view.findViewById<Button>(R.id.button_choose_it).apply {
             setOnClickListener {
-                val select = adapter.selected
-                if (select != -1) {
-                    val device = adapter.list.get(select)
-                    if (activity is StartupActivity) {
+                with (adapter.selectionTracker) {
+                    if (hasSelection()) {
+                        val device = adapter.getItemByKey(selection.first())
                         preference.apply {
                             edit().putString(Const.Preference.KEY_DEVICE, device.address).apply()
                         }
-                        with(startupActivity) {
-                            this.device = device
-                            deviceName.text = getInformation()
-                        }
                     }
+                    // do transit
                 }
             }
         }
@@ -65,6 +62,14 @@ class DeviceSelectFragment : Fragment() {
             setOnClickListener {
                 Toast.makeText(context, "Do pairling yourself", Toast.LENGTH_SHORT).show()  //TODO
             }
+        }
+    }
+
+    val selectionObserver = object : SelectionTracker.SelectionObserver<String>() {
+
+        override fun onItemStateChanged(key: String, selected: Boolean) {
+            Log.v(Const.TAG, "DeviceSelectFragment::onItemStateChanged $key is $selected")
+            super.onItemStateChanged(key, selected)
         }
     }
 }
