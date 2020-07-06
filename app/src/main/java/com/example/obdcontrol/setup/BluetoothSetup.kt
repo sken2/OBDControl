@@ -17,7 +17,7 @@ import java.util.*
 
 object BluetoothSetup : Observable() {
 
-    val adapter: BluetoothAdapter? by lazy {
+    private val adapter: BluetoothAdapter? by lazy {
         BluetoothAdapter.getDefaultAdapter()
     }
     val preferPlivileges = arrayOf(
