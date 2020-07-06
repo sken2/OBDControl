@@ -3,6 +3,7 @@ package com.example.obdcontrol.task
 import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Handler
@@ -22,6 +23,7 @@ import java.lang.ref.WeakReference
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.*
+import kotlin.NoSuchElementException
 
 class ElmCommTask : Service(), Observer {
 
@@ -44,6 +46,7 @@ class ElmCommTask : Service(), Observer {
         super.onCreate()
         this.delimiter = Const.CR //TODO create setter
         this.disposer = ideDebuggingDisposer
+        Monitor.init(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -152,7 +155,7 @@ class ElmCommTask : Service(), Observer {
 
     fun startListen() {
         Log.v(Const.TAG, "ElmCommTask::startListen")
-        socket?.run {
+        socket?.let {
             listenFuture = executor.submit(MonitorTask(this@ElmCommTask))
         }
     }
@@ -163,7 +166,7 @@ class ElmCommTask : Service(), Observer {
             cancel(true)
             try {
                 get()
-            } catch (e : InterruptedException) {
+            } catch (e : CancellationException) {
                 //
             } catch (e : java.lang.Exception) {
                 disposer?.dispose(e)
@@ -176,6 +179,7 @@ class ElmCommTask : Service(), Observer {
     private fun onConnectionDisconnected(e : Exception? = null) {
         Log.i(Const.TAG, "ElmCommTask::onConnectionDisconnected ${e?.message}")
         listener?.onConnectionClosed()
+        listener = null
     }
 
     private fun getInitializeCommands() : List<String>{
@@ -242,6 +246,43 @@ class ElmCommTask : Service(), Observer {
             Logging.receive(buffer.copyOfRange(0, position).toString(Charset.defaultCharset()) + "+")   //mark timeout with "+"
         }
         return false
+    }
+
+    object Monitor : Observable() {
+
+        private var running = false
+        lateinit var service: ElmCommTask
+
+        fun init (service : Context) {
+            if (service is ElmCommTask) {
+                running = false
+                this.service = service
+            }
+        }
+
+        fun start (o : Observer, command : String) {
+            running = true
+            addObserver(o)
+            service.send(command)
+        }
+
+        fun stop () {
+            deleteObservers()
+            running = false
+        }
+
+        fun isRunning() : Boolean {
+            return running
+        }
+
+        fun arrive(message : String) {
+            when (message.trim()) {
+                "?", "NO DATA", "BUS ERROR", "STOPPED" -> {
+                    stop()
+                }
+                "OK" -> {}
+            }
+        }
     }
 
     private class OpenTask(private val device : BluetoothDevice, private val service : ElmCommTask) : Callable<BluetoothSocket> {
@@ -312,11 +353,16 @@ class ElmCommTask : Service(), Observer {
                         if (message == null) {
                             break
                         }
+                        if (Monitor.isRunning()) {
+                            Monitor.arrive(message)
+                        }
                         Logging.receive(message)
                     }
                 }
             } catch (e : IOException) {
                 server.onConnectionDisconnected(e)
+            } catch (e : NoSuchElementException) {
+                Log.v(Const.TAG, "ElmCommTask::MonitorTask", e)
             } catch (e : Exception) {
                 server.disposer?.dispose(e)
             }
