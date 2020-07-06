@@ -47,8 +47,6 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     }
     private val afterBindQueue = LinkedList<()->Unit>()
 
-    private var autostartChat = true
-    private var autostartControl = false
     private lateinit var connectSwitch : SwitchCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,13 +118,8 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     override fun onConectionInitialized() {
         Log.v(Const.TAG, "StartupActivity::onConnectionInitialized")
-        // TODO
-        when {
-            autostartChat -> {goChat()}
-            autostartControl -> {}//TODO
-            else -> {
-                // no idea
-            }
+        if (preference.getBoolean(getString(R.string.checkbox_autoconnect), false)) {
+            findNavController(R.id.fragment_main_screen).navigate(R.id.action_global_sppChatFragment)
         }
     }
 
@@ -166,14 +159,11 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     protected fun disconnect() {
         service?.let {
             if (it.isConnected()) {
-                service?.closeComm()
-//                applicationContext.unbindService(connection)
+//                service?.closeComm()
+                applicationContext.unbindService(connection)
             }
+            service = null
         }
-    }
-
-    private fun goChat() {
-        findNavController(R.id.fragment_main_screen).navigate(R.id.action_global_sppChatFragment)
     }
 
     fun getInformation() : SpannableStringBuilder{
