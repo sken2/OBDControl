@@ -50,8 +50,7 @@ class DeviceSelectFragment : Fragment() {
                 if (select != -1) {
                     val device = adapter.list.get(select)
                     if (activity is StartupActivity) {
-                        val startupActivity = activity as StartupActivity
-                        startupActivity.preference.apply {
+                        preference.apply {
                             edit().putString(Const.Preference.KEY_DEVICE, device.address).apply()
                         }
                         with(startupActivity) {
