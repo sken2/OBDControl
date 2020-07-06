@@ -1,14 +1,13 @@
 package com.example.obdcontrol.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Spannable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.RadioGroup
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
@@ -17,8 +16,11 @@ import java.util.*
 
 class MonitoringFragment : Fragment(), Observer {
 
-    val startupActivity by lazy {
+    private val startupActivity by lazy {
         requireActivity() as StartupActivity
+    }
+    val pid by lazy {
+        view?.findViewById<EditText>(R.id.edit_filter_pid)
     }
     var running = false
 
@@ -33,18 +35,29 @@ class MonitoringFragment : Fragment(), Observer {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        filterBuilder.pid = pid!!
         with(view) {
             findViewById<Button>(R.id.button_start_monitor).run {
                 setOnClickListener {
                     if (running) {
-                        text = "Stop"
-                        monitor.stop()
-                    } else {
                         text = "Run"
-                        monitor.start(startupActivity.service)
+                        startupActivity.service?.run {
+                            ElmCommTask.Monitor.stop()
+                        }
+                    } else {
+                        val  command = filterBuilder.getCommand()
+                        text = "Stop"
+                        startupActivity.service?.run {
+                            ElmCommTask.Monitor.start(this, command)
+                        }
                     }
                     running = !running
                 }
+
+                text = "Run"
+            }
+            findViewById<RadioGroup>(R.id.group_choose_filter)?.run {
+                setOnCheckedChangeListener(filterBuilder)
             }
         }
     }
@@ -53,38 +66,68 @@ class MonitoringFragment : Fragment(), Observer {
         Log.v(Const.TAG, "Monitoringragment::update")
     }
 
-    object monitor {
+    private object filterBuilder : RadioGroup.OnCheckedChangeListener {
+        lateinit var pid : EditText
+        var sendPid : String = "C1"
+        var receievePid : String = "00"
+        var lastSelection = R.id.radio_filter_none
 
-        var service: ElmCommTask? = null
-        lateinit var logging : Spannable
-
-        fun start(service : ElmCommTask?) {
-            service?.run {
-                this@monitor.service = this
-                val command = filter.getCommand()
-                send(command)
-            }
-        }
-
-        fun stop() {
-            service?.run {
-                send(" ")
-            }
-            service = null
-        }
-    }
-
-    object filter : RadioGroup.OnCheckedChangeListener {
-
-        var sendPid : Byte = 0x40.toByte()
-        var receievePid : Byte = 0xc0.toByte()
-
+        @SuppressLint("SetTextI18n")
         override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
-            TODO("Not yet implemented")
+            when (checkedId) {
+                R.id.radio_filter_none -> {
+                    pid.isEnabled = false
+                    lastSelection = R.id.radio_filter_none
+                }
+                R.id.radio_receiver_filter -> {
+                    pid.isEnabled = true
+                    if (lastSelection == R.id.radio_tranfsmitter_filter) {
+                        sendPid = pid.text.toString()
+                    }
+                    pid.setText(receievePid, TextView.BufferType.EDITABLE)
+                    lastSelection = R.id.radio_receiver_filter
+                }
+                R.id.radio_tranfsmitter_filter -> {
+                    pid.isEnabled = true
+                    if (lastSelection == R.id.radio_receiver_filter) {
+                        receievePid = pid.text.toString()
+                    }
+                    pid.setText(sendPid, TextView.BufferType.EDITABLE)
+                    lastSelection = R.id.radio_tranfsmitter_filter
+                }
+            }
         }
-        fun getCommand() : String {
 
-            return "ATMA"
+        fun getCommand() : String {
+            when (lastSelection) {
+                R.id.radio_filter_none -> {
+                    return "ATMA"
+                }
+                R.id.radio_receiver_filter -> {
+                    return "AT MR ${pid.text}"
+                }
+                R.id.radio_tranfsmitter_filter -> {
+                    return "AT MT ${pid.text}"
+                }
+            }
+            // never come to here, i hope
+            Log.e(Const.TAG, "MonitoringFragment::getCommands unknown error")
+            return ""
+        }
+
+        fun isValid(pid : String) : Boolean {
+            return true //TODO
+        }
+
+        fun hexToByte(hexString : String) : Byte {
+            if (hexString.length != 2) {
+                return 0.toByte()
+            }
+            var value = 0
+            hexString.toCharArray().forEach {
+                value += value * 16 + Character.digit(it, 16)
+            }
+            return value.toByte()
         }
     }
 }
