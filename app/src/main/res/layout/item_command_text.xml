@@ -8,5 +8,7 @@
         android:id="@+id/text_command_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="2dp" />
+        android:layout_margin="2dp"
+        android:backgroundTint="@color/commands"
+        android:textSize="18sp" />
 </LinearLayout>

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import android.view.*
 import android.widget.TextView
+import androidx.fragment.app.FragmentManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.SelectionTracker
@@ -11,15 +12,19 @@ import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
+import com.example.obdcontrol.ui.SppChatFragment
+import com.example.obdcontrol.ui.StartupActivity
 import org.json.JSONArray
-import org.json.JSONObject
 
 class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHolder>() {
 
     val history = mutableListOf<String>()
+    lateinit var startupActivity: StartupActivity
+    lateinit var sppChatFragment: SppChatFragment
     lateinit var preference : SharedPreferences
     lateinit var selectionTracker : SelectionTracker<String>
     lateinit var recyclerView : RecyclerView
+    private var actionMode : ActionMode? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         Log.v(Const.TAG, "CommandHistoryAdapter::onCreateViewHolder")
@@ -46,6 +51,8 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         Log.v(Const.TAG, "CommandHistoryAdapter::onAttachedToRecyclerViw")
         preference = PreferenceManager.getDefaultSharedPreferences(recyclerView.context.applicationContext)
+        this.startupActivity = recyclerView.context as StartupActivity
+        this.sppChatFragment = FragmentManager.findFragment(recyclerView)
         this.recyclerView = recyclerView
         val commands = preference.getString(Const.Preference.KEY_HISTORY, "[]")!!
         val ja = JSONArray(commands)
@@ -62,16 +69,15 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
             itemDatilLookup,
             StorageStrategy.createStringStorage()
         ).build().apply {
-            addObserver(actionObserver)
+            addObserver(sppChatFragment.actionObserver)
         }
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         Log.v(Const.TAG, "CommandHistoryAdapter::onDetachedFromRecyclerView")
-        if (history.isNotEmpty()) {
-            val ja = JSONArray(history)
-            preference.edit().putString(Const.Preference.KEY_HISTORY, ja.toString()).apply()
-        }
+        val ja = JSONArray(history)
+        preference.edit().putString(Const.Preference.KEY_HISTORY, ja.toString()).apply()
+        history.clear()
     }
 
     fun issue(command : String) {
@@ -96,35 +102,6 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
                 }
             }
             return null
-        }
-    }
-
-    private val actionModeCallback = object : ActionMode.Callback {
-        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-            Log.v(Const.TAG, "CommandHistoryAdapter::onActionItemClicked $mode $item")
-            return false
-        }
-
-        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-            Log.v(Const.TAG, "CommandHistoryAdapter::onCreateActionMode $mode")
-            return false
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-            Log.v(Const.TAG, "CommandHistoryAdapter::onPrepareActionMode $mode")
-            return false
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode?) {
-            Log.v(Const.TAG, "CommandHistoryAdapter::onDestroyActionMode $mode")
-            selectionTracker.clearSelection()
-        }
-    }
-
-    private object actionObserver : SelectionTracker.SelectionObserver<String>() {
-
-        override fun onSelectionChanged() {
-            super.onSelectionChanged()
         }
     }
 
