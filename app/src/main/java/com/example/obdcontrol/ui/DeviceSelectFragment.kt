@@ -34,10 +34,6 @@ class DeviceSelectFragment : Fragment() {
     ): View? {
         Log.v(Const.TAG, "DeviceSearchFragment::onCreateView")
         val contentView = inflater.inflate(R.layout.fragment_select_device, container, false)
-        contentView.findViewById<RecyclerView>(R.id.recycler_devices)?.apply {
-            layoutManager = LinearLayoutManager(view?.context)
-            adapter = this@DeviceSelectFragment.adapter
-        }
         return contentView
     }
 
@@ -45,6 +41,10 @@ class DeviceSelectFragment : Fragment() {
         Log.v(Const.TAG, "DeviceSearchFragment::onViewCreated")
         super.onViewCreated(view, savedInstanceState)
 
+        view.findViewById<RecyclerView>(R.id.recycler_devices)?.apply {
+            layoutManager = LinearLayoutManager(view.context)
+            adapter = this@DeviceSelectFragment.adapter
+        }
         view.findViewById<Button>(R.id.button_choose_it).apply {
             setOnClickListener {
                 with (adapter.selectionTracker) {

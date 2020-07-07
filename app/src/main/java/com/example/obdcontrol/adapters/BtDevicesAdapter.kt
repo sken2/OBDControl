@@ -29,19 +29,18 @@ class BtDevicesAdapter : RecyclerView.Adapter<BtDevicesAdapter.ViewHolder>() {
     private val deviceSelectFragment by lazy {
         FragmentManager.findFragment<DeviceSelectFragment>(recycler)
     }
-//    var selected = -1
-    var matchOnlySppDevice = false
-    val keyProvider by lazy {
-        DevcieKeyProvider(95)
-    }
     val selectionTracker by lazy {
         SelectionTracker.Builder<String>(
-            "",
+            "woofoo",
             recycler,
             keyProvider,
             DeviceItemLookup,
             StorageStrategy.createStringStorage()
         ).build()
+    }
+    var matchOnlySppDevice = false
+    val keyProvider by lazy {
+        DevcieKeyProvider(1)
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -71,15 +70,6 @@ class BtDevicesAdapter : RecyclerView.Adapter<BtDevicesAdapter.ViewHolder>() {
 //        Log.v(Const.TAG, "BtDeviceAdapter::onBindViewHolder") // so many messages from this
         holder.name.text = list.get(position).name
         holder.isActive(selectionTracker.isSelected(list.get(position).address))
-//        holder.select.setOnClickListener{
-//            if (position != selected) {
-//                Log.v(Const.TAG, "BtDeviceAdapter::onClickListener position = $position")
-//                selected = position
-//            } else {
-//                // reset color
-//                selected = -1
-//            }
-//        }
         return
     }
 
