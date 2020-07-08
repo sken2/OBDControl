@@ -11,7 +11,9 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
+import com.example.obdcontrol.entities.SetupActionModeCallback
 import com.example.obdcontrol.task.ElmCommTask
+import kotlinx.android.synthetic.main.fratment_monitoring.view.*
 import java.util.*
 
 class MonitoringFragment : Fragment(), Observer {
@@ -19,10 +21,13 @@ class MonitoringFragment : Fragment(), Observer {
     private val startupActivity by lazy {
         requireActivity() as StartupActivity
     }
-    val pid by lazy {
+    private val pid by lazy {
         view?.findViewById<EditText>(R.id.edit_filter_pid)
     }
-    var running = false
+    private val loggingText by lazy {
+        view?.findViewById<TextView>(R.id.text_dialog)
+    }
+    private var running = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,6 +36,7 @@ class MonitoringFragment : Fragment(), Observer {
     ): View? {
         return inflater.inflate(R.layout.fratment_monitoring, container, false)
     }
+    var monitorLogging : String = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -44,6 +50,7 @@ class MonitoringFragment : Fragment(), Observer {
                             ElmCommTask.Monitor.stop()
                         }
                     } else {
+                        monitorLogging = ""
                         val  command = filterBuilder.getCommand()
                         startupActivity.service?.run {
                             ElmCommTask.Monitor.start(this, command)
@@ -55,6 +62,10 @@ class MonitoringFragment : Fragment(), Observer {
             findViewById<RadioGroup>(R.id.group_choose_filter)?.run {
                 setOnCheckedChangeListener(filterBuilder)
             }
+            findViewById<ScrollView>(R.id.scroll_logging).run {
+                // TODO set scoller
+            }
+            loggingText?.customInsertionActionModeCallback = SetupActionModeCallback(requireContext().applicationContext)
         }
     }
 
@@ -64,7 +75,11 @@ class MonitoringFragment : Fragment(), Observer {
     }
 
     override fun update(o: Observable?, arg: Any?) {
-        Log.v(Const.TAG, "Monitoringragment::update")
+//        Log.v(Const.TAG, "Monitoringragment::update")
+        if (o is ElmCommTask.Monitor) {
+            monitorLogging += "\n" + arg as String
+            loggingText?.text = monitorLogging
+        }
     }
 
     private fun refrectState() {
@@ -124,21 +139,6 @@ class MonitoringFragment : Fragment(), Observer {
             // never come to here, i hope
             Log.e(Const.TAG, "MonitoringFragment::getCommands unknown error")
             return ""
-        }
-
-        fun isValid(pid : String) : Boolean {
-            return true //TODO
-        }
-
-        fun hexToByte(hexString : String) : Byte {
-            if (hexString.length != 2) {
-                return 0.toByte()
-            }
-            var value = 0
-            hexString.toCharArray().forEach {
-                value += value * 16 + Character.digit(it, 16)
-            }
-            return value.toByte()
         }
     }
 }

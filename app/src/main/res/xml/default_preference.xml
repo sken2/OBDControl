@@ -15,4 +15,32 @@
         android:selectAllOnFocus="true"
         android:singleLine="false"
         android:title="Commands to initialize" />
+    <PreferenceCategory android:title="@string/title_control_setting">
+
+        <EditTextPreference
+            android:key="@string/edit_volume_up"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/edit_volume_up" />
+        <EditTextPreference
+            android:key="@string/key_volume_down"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/edit_volume_down" />
+        <EditTextPreference
+            android:key="@string/key_prev_tune"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/edit_prev_tune" />
+        <EditTextPreference
+            android:key="@string/key_next_tune"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/edit_next_tune" />
+        <EditTextPreference
+            android:key="@string/key_mute"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/edit_mute" />
+    </PreferenceCategory>
 </PreferenceScreen>

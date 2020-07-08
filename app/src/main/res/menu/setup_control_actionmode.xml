@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_setup_up"
+        android:title="@string/edit_volume_up" />
+    <item
+        android:id="@+id/menu_setup_down"
+        android:title="@string/edit_volume_down" />
+    <item
+        android:id="@+id/menu_setup_prev"
+        android:title="@string/edit_prev_tune" />
+    <item
+        android:id="@+id/menu_setup_next"
+        android:title="@string/edit_next_tune" />
+    <item
+        android:id="@+id/menu_setup_mute"
+        android:title="@string/edit_mute" />
+</menu>

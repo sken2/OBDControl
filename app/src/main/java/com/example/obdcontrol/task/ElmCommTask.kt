@@ -282,6 +282,8 @@ class ElmCommTask : Service(), Observer {
                 }
                 "OK" -> {}
             }
+            setChanged()
+            notifyObservers()
         }
     }
 

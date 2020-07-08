@@ -9,6 +9,17 @@
     <string name="title_elm_config">ELM327 Configuration</string>
     <string name="title_check_auto_connect">Auto connect when app stated</string>
     <string name="title_check_auto_background">Go background after connect</string>
+    <string name="title_control_setting">Control Settings</string>
+    <string name="edit_volume_up">Volume UP</string>
+    <string name="edit_volume_down">Volume DOWN</string>
+    <string name="edit_prev_tune">Previous Tune</string>
+    <string name="edit_next_tune">Next Tune</string>
+    <string name="edit_mute">Mute</string>
+    <string name="key_volume_up">volumeUp</string>
+    <string name="key_volume_down">volumeDown</string>
+    <string name="key_prev_tune">prevTune</string>
+    <string name="key_next_tune">nextTune</string>
+    <string name="key_mute">mute</string>
     <!-- menu items -->
     <string name="title_device">Device</string>
     <string name="title_logging">Logging</string>

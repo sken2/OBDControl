@@ -81,7 +81,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
-        android:id="@+id/text_diglog"
+        android:id="@+id/scroll_logging"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -94,7 +94,7 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_filter_pid">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/text_dialog"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="Logging" />
