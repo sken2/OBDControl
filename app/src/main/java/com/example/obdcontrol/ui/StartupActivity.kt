@@ -135,6 +135,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                 connectSwitch.isChecked = false
             }
         }
+        disconnect()
     }
 
     fun setDevice(device : BluetoothDevice) {
@@ -158,7 +159,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                         service?.setConnectionStateListener(this@StartupActivity)
                     }
                 }
-                deviceInformation.text = it.name
+                deviceInformation.text = "[Connecting]"
             }
         } else {
             deviceInformation.text = "[No device selected]"
@@ -167,9 +168,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     protected fun disconnect() {
         service?.let {
-            if (it.isConnected()) {
-                applicationContext.unbindService(connection)
-            }
+            applicationContext.unbindService(connection)
             service = null
         }
     }

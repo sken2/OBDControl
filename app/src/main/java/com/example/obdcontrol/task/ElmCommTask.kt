@@ -84,17 +84,17 @@ class ElmCommTask : Service(), Observer {
         listenFuture?.run {
             stopListen()
         }
-        socket?.run {
-            closeComm()
-        }
+        closeComm()
         disposer = null
         return super.onUnbind(intent)
     }
 
-    fun closeComm() {
-        socket?.run {
+    private fun closeComm() {
+        socket?.also {
             try {
-                close()
+                if (it.isConnected()) {
+                    it.close()
+                }
             } catch (e : Exception) {
                 disposer?.dispose(e)
             } finally {
