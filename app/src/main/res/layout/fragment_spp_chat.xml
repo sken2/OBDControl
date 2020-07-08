@@ -11,16 +11,18 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="36dp"
         android:layout_marginBottom="28dp"
-        android:text="Start"
+        android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="@string/btn_monitor" />
 
     <Button
         android:id="@+id/button_show_log"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
-        android:text="show"
+        android:text="@string/btn_showlog"
+        android:textAllCaps="false"
         app:layout_constraintEnd_toStartOf="@+id/button_start_monitor"
         app:layout_constraintTop_toTopOf="@+id/button_start_monitor" />
 
@@ -40,7 +42,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_command_history"
         android:layout_width="0dp"
-        android:layout_height="200dp"
+        android:layout_height="100dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

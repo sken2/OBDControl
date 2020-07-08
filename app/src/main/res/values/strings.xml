@@ -17,5 +17,7 @@
     <string name="btn_running">Running</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_clear">Clear</string>
+    <string name="btn_monitor">Monitor</string>
+    <string name="btn_showlog">Logging</string>
     <string name="notification_channel_id">Notification off Course</string>
 </resources>

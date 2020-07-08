@@ -34,27 +34,23 @@ class MonitoringFragment : Fragment(), Observer {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         filterBuilder.pid = pid!!
         with(view) {
             findViewById<Button>(R.id.button_start_monitor).run {
                 setOnClickListener {
+                    refrectState()
                     if (running) {
-                        text = "Run"
                         startupActivity.service?.run {
                             ElmCommTask.Monitor.stop()
                         }
                     } else {
                         val  command = filterBuilder.getCommand()
-                        text = "Stop"
                         startupActivity.service?.run {
                             ElmCommTask.Monitor.start(this, command)
                         }
                     }
                     running = !running
                 }
-
-                text = "Run"
             }
             findViewById<RadioGroup>(R.id.group_choose_filter)?.run {
                 setOnCheckedChangeListener(filterBuilder)
@@ -62,8 +58,23 @@ class MonitoringFragment : Fragment(), Observer {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        refrectState()
+    }
+
     override fun update(o: Observable?, arg: Any?) {
         Log.v(Const.TAG, "Monitoringragment::update")
+    }
+
+    private fun refrectState() {
+        view?.findViewById<Button>(R.id.button_start_monitor)?.run {
+            if (running) {
+                text = getString(R.string.btn_running)
+            } else {
+                text = getString(R.string.btn_stopped)
+            }
+        }
     }
 
     private object filterBuilder : RadioGroup.OnCheckedChangeListener {
