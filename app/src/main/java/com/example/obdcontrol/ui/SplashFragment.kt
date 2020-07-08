@@ -29,21 +29,5 @@ class SplashFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<Button>(R.id.button_connect)?.apply {
-            setOnClickListener{
-//                startupActivity.connect()
-                Toast.makeText(context, "Connected(maybe)", Toast.LENGTH_SHORT).show()
-            }
-        }
-        view.findViewById<Button>(R.id.button_start_chat).apply {
-            setOnClickListener {
-                findNavController().navigate(R.id.action_splashFragment_to_sppChatFragment)
-            }
-        }
-        with(requireActivity()) {
-            takeIf { this is StartupActivity }.run {
-                //TODO
-            }
-        }
     }
 }
