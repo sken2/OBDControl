@@ -80,13 +80,11 @@ class SppChatFragment : Fragment() {
 
     val actionObserver = object : SelectionTracker.SelectionObserver<String>() {
 
-        override fun onSelectionChanged() {
-            Log.v(Const.TAG, "SppChatFragment::onSelectionChanged")
-            super.onSelectionChanged()
-            if (historyAdapter.selectionTracker.hasSelection()) {
+        override fun onItemStateChanged(key: String, selected: Boolean) {
+//            super.onItemStateChanged(key, selected)
+            if (selected) {
                 commandEdittext?.run {
-                    val command = historyAdapter.selectionTracker.selection.first()
-                    commandEdittext?.setText(command, TextView.BufferType.EDITABLE)
+                    commandEdittext?.setText(key, TextView.BufferType.EDITABLE)
                 }
             }
         }
