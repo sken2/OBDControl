@@ -9,4 +9,9 @@
     <string name="title_elm_config">ELM327 Configuration</string>
     <string name="title_check_auto_connect">Auto connect when app stated</string>
     <string name="title_check_auto_background">Go background after connect</string>
+    <!-- menu items -->
+    <string name="title_device">Device</string>
+    <string name="title_logging">Logging</string>
+    <string name="title_setting">Settings</string>
+    <string name="title_elm_setup">Setup ELM327</string>
 </resources>

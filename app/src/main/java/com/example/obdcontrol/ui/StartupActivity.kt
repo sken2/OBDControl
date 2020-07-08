@@ -105,6 +105,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                 R.id.menu_logging -> navigate(R.id.action_global_loggingFragment)
                 R.id.menu_select -> navigate(R.id.action_global_deviceSearchFragment)
                 R.id.menu_settings -> navigate(R.id.action_global_optionFragment)
+                R.id.menu_setup_elm327 -> navigate(R.id.action_global_sppChatFragment)
             }
         }
         return super.onOptionsItemSelected(item)

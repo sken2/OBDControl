@@ -4,13 +4,16 @@
 
     <item
         android:id="@+id/menu_select"
-        android:title="Device" />
+        android:title="@string/title_device" />
     <item
         android:id="@+id/menu_logging"
-        android:title="Logging" />
+        android:title="@string/title_logging" />
+    <item
+        android:id="@+id/menu_setup_elm327"
+        android:title="@string/title_elm_setup" />
     <item
         android:id="@+id/menu_settings"
-        android:title="Settings" />
+        android:title="@string/title_setting" />
     <item
         android:id="@+id/app_bar_switch"
         android:title="Connection"
