@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import com.example.obdcontrol.entities.Logging
 import com.example.obdcontrol.obd2.OBDResponse
 import java.io.*
 import java.lang.Exception

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.text.Editable
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
@@ -15,7 +14,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
-import com.example.obdcontrol.Logging
+import com.example.obdcontrol.entities.Logging
 import com.example.obdcontrol.R
 import com.example.obdcontrol.adapters.CommandHistoryAdapter
 import com.example.obdcontrol.adapters.CommandHistoryLayoutManager

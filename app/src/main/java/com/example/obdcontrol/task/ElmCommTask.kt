@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.preference.PreferenceManager
 import com.example.obdcontrol.BadAccidentDisposer
 import com.example.obdcontrol.Const
-import com.example.obdcontrol.Logging
+import com.example.obdcontrol.entities.Logging
 import com.example.obdcontrol.R
 import com.example.obdcontrol.setup.BluetoothSetup
 import java.io.BufferedInputStream

@@ -1,4 +1,4 @@
-package com.example.obdcontrol
+package com.example.obdcontrol.entities
 
 import android.graphics.Typeface
 import android.text.Spannable
@@ -9,11 +9,21 @@ import java.lang.Exception
 import java.util.*
 
 object Logging : Observable() {
-    private var logging = arrayOf(Transaction("", Direction.RX))
+    private var logging = arrayOf(
+        Transaction(
+            "",
+            Direction.RX
+        )
+    )
 
     fun clear() {
         synchronized(logging) {
-            this.logging = arrayOf(Transaction("", Direction.RX))
+            logging = arrayOf(
+                Transaction(
+                    "",
+                    Direction.RX
+                )
+            )
             setChanged()
             notifyObservers()
         }
@@ -21,7 +31,10 @@ object Logging : Observable() {
 
     fun send(message : String) {
         synchronized(logging) {
-            logging += Transaction(message, Direction.TX)
+            logging += Transaction(
+                message,
+                Direction.TX
+            )
         }
         setChanged()
         notifyObservers()
@@ -31,7 +44,10 @@ object Logging : Observable() {
         synchronized(logging) {
             when (logging.last().dicrection) {
                 Direction.TX -> {
-                    logging += Transaction(message, Direction.RX)
+                    logging += Transaction(
+                        message,
+                        Direction.RX
+                    )
                 }
                 Direction.RX -> {
                     logging.last().text += message
