@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,14 +18,14 @@ import com.example.obdcontrol.adapters.BtDevicesAdapter
 
 class DeviceSelectFragment : Fragment() {
 
+    private val startupActivity by lazy {
+        activity as StartupActivity
+    }
     private val adapter by lazy {
         BtDevicesAdapter()
     }
     private val preference by lazy {
         startupActivity.preference
-    }
-    private val startupActivity by lazy {
-        activity as StartupActivity
     }
 
     override fun onCreateView(
@@ -53,8 +54,9 @@ class DeviceSelectFragment : Fragment() {
                         preference.apply {
                             edit().putString(Const.Preference.KEY_DEVICE, device.address).apply()
                         }
+                        startupActivity.setDevice(device)
+                        findNavController().navigate(R.id.action_deviceSearchFragment_to_splashFragment)
                     }
-                    // do transit
                 }
             }
         }

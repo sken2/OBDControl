@@ -20,7 +20,12 @@
     <fragment
         android:id="@+id/deviceSearchFragment"
         android:name="com.example.obdcontrol.ui.DeviceSelectFragment"
-        android:label="DeviceSearchFragment" />
+        android:label="DeviceSearchFragment" >
+        <action
+            android:id="@+id/action_deviceSearchFragment_to_splashFragment"
+            app:destination="@id/splashFragment"
+            app:exitAnim="@android:anim/slide_in_left" />
+    </fragment>
     <fragment
         android:id="@+id/optionFragment"
         android:name="com.example.obdcontrol.ui.OptionFragment"

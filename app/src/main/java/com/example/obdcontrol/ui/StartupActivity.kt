@@ -34,14 +34,14 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     val preference by lazy {
         PreferenceManager.getDefaultSharedPreferences(this)
     }
-    val adapter by lazy {
+    var service : ElmCommTask? = null
+    private val adapter by lazy {
         BluetoothAdapter.getDefaultAdapter()
     }
-    val deviceName by lazy {
+    private val deviceInformation by lazy {
         findViewById<TextView>(R.id.text_device_name)
     }
-    var device : BluetoothDevice? = null
-    var service : ElmCommTask? = null
+    private var device : BluetoothDevice? = null
     private val handler by lazy {
         Handler(Looper.getMainLooper())
     }
@@ -59,6 +59,10 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
         }
         NotificationSetup.makeChannel(this)
         setContentView(R.layout.activity_startup)
+        val address = preference.getString(Const.Preference.KEY_DEVICE, "")!!
+        if (address.isNotEmpty()) {
+            device = adapter.getRemoteDevice(address)
+        }
         if (preference.getBoolean(getString(R.string.checkbox_autoconnect), false) ) {
             connect()
         }
@@ -66,7 +70,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     override fun onResume() {
         Log.v(Const.TAG, "StartupActivity::onResume")
-        deviceName.text = getInformation()
+        deviceInformation.text = getInformation()
         super.onResume()
     }
 
@@ -109,7 +113,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     override fun onConnectionOpened() {
         Log.v(Const.TAG, "StartupActivity::onConnectionOpened")
         runOnUiThread{
-            deviceName.text = getInformation()
+            deviceInformation.text = getInformation()
             if (!connectSwitch.isChecked) {
                 connectSwitch.isChecked = true
             }
@@ -126,11 +130,16 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     override fun onConnectionClosed() {
         Log.v(Const.TAG, "StartupActivity::onConnectionClosed")
         runOnUiThread {
-            deviceName.text = getInformation()
+            deviceInformation.text = getInformation()
             if (connectSwitch.isChecked) {
                 connectSwitch.isChecked = false
             }
         }
+    }
+
+    fun setDevice(device : BluetoothDevice) {
+        this.device = device
+        deviceInformation.text = getInformation()
     }
 
     protected fun connect() {
@@ -149,32 +158,31 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                         service?.setConnectionStateListener(this@StartupActivity)
                     }
                 }
-                deviceName.text = it.name
+                deviceInformation.text = it.name
             }
         } else {
-            deviceName.text = "[No device selected]"
+            deviceInformation.text = "[No device selected]"
         }
     }
 
     protected fun disconnect() {
         service?.let {
             if (it.isConnected()) {
-//                service?.closeComm()
                 applicationContext.unbindService(connection)
             }
             service = null
         }
     }
 
-    fun getInformation() : SpannableStringBuilder{
+    private fun getInformation() : SpannableStringBuilder{
         val builder = SpannableStringBuilder()
         if (device != null) {
             builder.append("${device?.name} : ")
             if (service == null) {
                 builder.append("[Disconnect]")
             } else {
-                service?.also {
-                    if (it.isConnected()) {
+                service?.run {
+                    if (isConnected()) {
                         builder.append( "[Connected]")
                     } else {
                         builder.append("[Disconnect]")

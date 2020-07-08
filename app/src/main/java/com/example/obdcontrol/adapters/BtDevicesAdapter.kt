@@ -11,10 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.FragmentManager
-import androidx.recyclerview.selection.ItemDetailsLookup
-import androidx.recyclerview.selection.ItemKeyProvider
-import androidx.recyclerview.selection.SelectionTracker
-import androidx.recyclerview.selection.StorageStrategy
+import androidx.recyclerview.selection.*
 import androidx.recyclerview.widget.RecyclerView
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
@@ -36,7 +33,9 @@ class BtDevicesAdapter : RecyclerView.Adapter<BtDevicesAdapter.ViewHolder>() {
             keyProvider,
             DeviceItemLookup,
             StorageStrategy.createStringStorage()
-        ).build()
+        )
+            .withSelectionPredicate(selectionPredicates)
+            .build()
     }
     var matchOnlySppDevice = false
     val keyProvider by lazy {
@@ -135,6 +134,20 @@ class BtDevicesAdapter : RecyclerView.Adapter<BtDevicesAdapter.ViewHolder>() {
 
         override fun getPosition(): Int {
             return adapterposition
+        }
+    }
+
+    private val selectionPredicates = object : SelectionTracker.SelectionPredicate<String>() {
+        override fun canSelectMultiple(): Boolean {
+            return false
+        }
+
+        override fun canSetStateForKey(key: String, nextState: Boolean): Boolean {
+            return true
+        }
+
+        override fun canSetStateAtPosition(position: Int, nextState: Boolean): Boolean {
+            return true
         }
     }
 }
