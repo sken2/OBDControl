@@ -99,7 +99,6 @@ class ElmCommTask : Service(), Observer {
                 disposer?.dispose(e)
             } finally {
                 socket = null
-                onConnectionDisconnected()
             }
         }
     }

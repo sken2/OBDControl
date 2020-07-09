@@ -136,7 +136,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                 connectSwitch.isChecked = false
             }
         }
-        disconnect()
+//        disconnect()
     }
 
     fun setDevice(device : BluetoothDevice) {
@@ -211,6 +211,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
         override fun onBindingDied(name: ComponentName?) {
             Log.v(Const.TAG, "StartupActivity::onBindingDied")
+            service = null
             super.onBindingDied(name)
         }
     }
