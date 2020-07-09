@@ -43,7 +43,7 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
         val commandText = holder.view.findViewById<TextView>(R.id.text_command_item)
         with(commandText) {
             val command = history.get(position)
-//            holder.bind(command, selectionTracker.isSelected(command)) // have to do: where is bind ?
+            this.isActivated = selectionTracker.isSelected(command)
             this.text = command
         }
     }
@@ -81,6 +81,7 @@ class CommandHistoryAdapter : RecyclerView.Adapter<CommandHistoryAdapter.ViewHol
     }
 
     fun issue(command : String) {
+        selectionTracker.clearSelection()
         synchronized(history) {
             history.remove(command) // replace old history to top
             history.add(command)
