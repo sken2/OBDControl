@@ -136,7 +136,6 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                 connectSwitch.isChecked = false
             }
         }
-//        disconnect()
     }
 
     fun setDevice(device : BluetoothDevice) {

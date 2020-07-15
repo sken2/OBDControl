@@ -364,6 +364,7 @@ class ElmCommTask : Service(), Observer {
                 server.onConnectionDisconnected(e)
             } catch (e : NoSuchElementException) {
                 Log.v(Const.TAG, "ElmCommTask::MonitorTask", e)
+                server.onConnectionDisconnected(e)
             } catch (e : Exception) {
                 server.disposer?.dispose(e)
             }
