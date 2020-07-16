@@ -307,44 +307,44 @@ class ElmCommTask : Service(), Observer {
         }
     }
 
-    private class InitTask(private val service: ElmCommTask) : Callable<Boolean> {
+        private class InitTask(private val service: ElmCommTask) : Callable<Boolean> {
 
-        var initializeSuccess = true
+            var initializeSuccess = true
 
-        override fun call(): Boolean {
-            try {
-                service.socket?.inputStream?.apply {
-                    service.send("ATZ")
-                    Thread.sleep(2000)
-                    service.waitOk()
-                    service.getInitializeCommands().forEach {
-                        service.send(it)
-                        val result = service.waitOk()
-                        initializeSuccess = initializeSuccess and result
+            override fun call(): Boolean {
+                try {
+                    service.socket?.inputStream?.apply {
+                        service.send("ATZ")
+                        Thread.sleep(2000)
+                        service.waitOk()
+                        service.getInitializeCommands().forEach {
+                            service.send(it)
+                            val result = service.waitOk()
+                            initializeSuccess = initializeSuccess and result
+                        }
+                    }
+                } catch (e : IOException) {
+                    service.onConnectionDisconnected(e)
+                } catch (e : Exception) {
+                    service.disposer?.dispose(e)
+                } finally {
+                    service.handler.post{
+                        service.onDeviceInitialized()
+                    }
+                    return initializeSuccess
+                }
+            }
+        }
+
+        private class MonitorTask(val server : ElmCommTask) : Callable<Unit>{
+
+            val scanner by lazy {
+                server.socket?.inputStream?.let {
+                    Scanner(BufferedInputStream(it)).apply {
+                        useDelimiter(Const.CR)
                     }
                 }
-            } catch (e : IOException) {
-                service.onConnectionDisconnected(e)
-            } catch (e : Exception) {
-                service.disposer?.dispose(e)
-            } finally {
-                service.handler.post{
-                    service.onDeviceInitialized()
-                }
-                return initializeSuccess
             }
-        }
-    }
-
-    private class MonitorTask(val server : ElmCommTask) : Callable<Unit>{
-
-        val scanner by lazy {
-            server.socket?.inputStream?.let {
-                Scanner(BufferedInputStream(it)).apply {
-                    useDelimiter(Const.CR)
-                }
-            }
-        }
 
         override fun call(): Unit {
             try {

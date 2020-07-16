@@ -54,7 +54,7 @@ class DeviceSelectFragment : Fragment() {
                         preference.apply {
                             edit().putString(Const.Preference.KEY_DEVICE, device.address).apply()
                         }
-                        startupActivity.setDevice(device)
+//                        startupActivity.setDevice(device)
                         findNavController().navigate(R.id.action_deviceSearchFragment_to_splashFragment)
                     }
                 }

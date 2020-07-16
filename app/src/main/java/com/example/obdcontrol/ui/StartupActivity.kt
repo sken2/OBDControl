@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -21,10 +20,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import com.example.obdcontrol.Const
 import com.example.obdcontrol.R
+import com.example.obdcontrol.entities.BtDeviceViewModel
 import com.example.obdcontrol.setup.NotificationSetup
 import com.example.obdcontrol.task.ElmCommTask
 import java.util.*
@@ -41,11 +42,18 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     private val deviceInformation by lazy {
         findViewById<TextView>(R.id.text_device_name)
     }
-    private var device : BluetoothDevice? = null
+//    private var device : BluetoothDevice? = null
     private val handler by lazy {
         Handler(Looper.getMainLooper())
     }
     private val afterBindQueue = LinkedList<()->Unit>()
+    private val btDeviceViewModel by lazy {
+        ViewModelProvider(this).get(BtDeviceViewModel::class.java).also { it ->
+            it.information.observe(this, androidx.lifecycle.Observer { builder ->
+                deviceInformation.text = builder
+            })
+        }
+    }
 
     private lateinit var connectSwitch : SwitchCompat
 
@@ -59,9 +67,8 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
         }
         NotificationSetup.makeChannel(this)
         setContentView(R.layout.activity_startup)
-        val address = preference.getString(Const.Preference.KEY_DEVICE, "")!!
-        if (address.isNotEmpty()) {
-            device = adapter.getRemoteDevice(address)
+        preference.getString(Const.Preference.KEY_DEVICE, null)?.let {
+            btDeviceViewModel.setDevice(adapter?.getRemoteDevice(it))
         }
         if (preference.getBoolean(getString(R.string.checkbox_autoconnect), false) ) {
             connect()
@@ -70,7 +77,6 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
 
     override fun onResume() {
         Log.v(Const.TAG, "StartupActivity::onResume")
-        deviceInformation.text = getInformation()
         super.onResume()
     }
 
@@ -89,6 +95,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                 setOnCheckedChangeListener {view, isCheched ->
                     Log.v(Const.TAG, "StartupActivity::onChanged")
                     if (this.isChecked) {
+                        btDeviceViewModel.changeState(BtDeviceViewModel.State.Connecting)
                         connect()
                     } else {
                         disconnect()
@@ -114,7 +121,7 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     override fun onConnectionOpened() {
         Log.v(Const.TAG, "StartupActivity::onConnectionOpened")
         runOnUiThread{
-            deviceInformation.text = getInformation()
+            btDeviceViewModel.changeState(BtDeviceViewModel.State.Connected)
             if (!connectSwitch.isChecked) {
                 connectSwitch.isChecked = true
             }
@@ -131,25 +138,20 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
     override fun onConnectionClosed() {
         Log.v(Const.TAG, "StartupActivity::onConnectionClosed")
         runOnUiThread {
-            deviceInformation.text = getInformation()
+            btDeviceViewModel.changeState(BtDeviceViewModel.State.Disconnect)
             if (connectSwitch.isChecked) {
                 connectSwitch.isChecked = false
             }
         }
     }
 
-    fun setDevice(device : BluetoothDevice) {
-        this.device = device
-        deviceInformation.text = getInformation()
-    }
-
     protected fun connect() {
         service?.let {
             if (it.isConnected()) return
         }
-        val address = preference.getString(Const.Preference.KEY_DEVICE, "")
-        if (address!!.isNotEmpty()) {
-            device = adapter?.getRemoteDevice(address)?.also {
+        val address = preference.getString(Const.Preference.KEY_DEVICE, null)
+        address?.let {
+            val device = adapter?.getRemoteDevice(address)?.also {
                 Intent(this.applicationContext, ElmCommTask::class.java).apply {
                     putExtra(BluetoothDevice.EXTRA_NAME, it)
                 }.run {
@@ -159,10 +161,8 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
                         service?.setConnectionStateListener(this@StartupActivity)
                     }
                 }
-                deviceInformation.text = "[Connecting]"
             }
-        } else {
-            deviceInformation.text = "[No device selected]"
+            btDeviceViewModel.setDevice(device)
         }
     }
 
@@ -171,27 +171,6 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
             applicationContext.unbindService(connection)
             service = null
         }
-    }
-
-    private fun getInformation() : SpannableStringBuilder{
-        val builder = SpannableStringBuilder()
-        if (device != null) {
-            builder.append("${device?.name} : ")
-            if (service == null) {
-                builder.append("[Disconnect]")
-            } else {
-                service?.run {
-                    if (isConnected()) {
-                        builder.append( "[Connected]")
-                    } else {
-                        builder.append("[Disconnect]")
-                    }
-                }
-            }
-        } else {
-            builder.append("[None]")
-        }
-        return builder
     }
 
     val connection = object : ServiceConnection {
@@ -212,19 +191,6 @@ class StartupActivity : AppCompatActivity(), ElmCommTask.ConnectionStateListener
             Log.v(Const.TAG, "StartupActivity::onBindingDied")
             service = null
             super.onBindingDied(name)
-        }
-    }
-
-    class ConfirmAndGoDialog(val title : String, val callback : Runnable) : DialogFragment() {
-
-        override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
-            return AlertDialog.Builder(activity)
-                .setTitle(title)
-                .setNegativeButton("Cancel", { dialog, which ->})
-                .setPositiveButton("Ok") { dialog, which ->
-                    callback.run()
-                }
-                .create()
         }
     }
 }
