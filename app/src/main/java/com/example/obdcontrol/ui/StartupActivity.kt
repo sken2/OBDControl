@@ -1,7 +1,5 @@
 package com.example.obdcontrol.ui
 
-import android.app.AlertDialog
-import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.ComponentName
