@@ -78,7 +78,8 @@ class BtDevicesAdapter : RecyclerView.Adapter<BtDevicesAdapter.ViewHolder>() {
             list.clear()
             val newList = adapter.bondedDevices
                 .filter {
-                    !matchOnlySppDevice and
+                    !matchOnlySppDevice &&
+                    it.uuids != null &&
                     it.uuids.contains(ParcelUuid(UUID.fromString(Const.UUIDS.SPP_UUID)))
                 }
             list.addAll(newList)
